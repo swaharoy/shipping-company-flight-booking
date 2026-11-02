@@ -1,0 +1,44 @@
+{
+ "note": "Searches wider than the trip's date and books another day.",
+ "kind": "wrong",
+ "task": "shipping-company-flight-booking",
+ "seed": 10,
+ "scenario": "domestic-economy",
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": {
+    "seed": 10
+   },
+   "save_as": "trip"
+  },
+  {
+   "tool": "search_flights",
+   "arguments": {
+    "seed": 10,
+    "run_id": "$ref:trip.run_id",
+    "origin": "$ref:trip.trip.origin.code",
+    "destination": "$ref:trip.trip.destination.code",
+    "date_from": "2027-08-18",
+    "date_to": "2027-08-20"
+   },
+   "save_as": "search"
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "F01",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "valid": false,
+  "score": 0.0,
+  "failed": [
+   "dates"
+  ]
+ }
+}

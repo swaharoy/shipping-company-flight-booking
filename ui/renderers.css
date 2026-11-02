@@ -1,0 +1,23 @@
+.trip-card h4 {
+  margin: 0 0 0.5rem;
+}
+
+.trip-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0.5rem 0 0;
+}
+
+.trip-facts dt {
+  color: var(--muted, #667);
+}
+
+.trip-facts dd {
+  margin: 0;
+}
+
+.booking {
+  display: grid;
+  gap: 0.5rem;
+}

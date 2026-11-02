@@ -1,0 +1,42 @@
+{
+ "note": "Business on a connection flying 361 min: allowed and required.",
+ "kind": "boundary",
+ "task": "shipping-company-flight-booking",
+ "seed": 3,
+ "scenario": "exactly-360-minutes",
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": {
+    "seed": 3
+   },
+   "save_as": "trip"
+  },
+  {
+   "tool": "search_flights",
+   "arguments": {
+    "seed": 3,
+    "run_id": "$ref:trip.run_id",
+    "origin": "$ref:trip.trip.origin.code",
+    "destination": "$ref:trip.trip.destination.code",
+    "date_from": "$ref:trip.trip.date_from",
+    "date_to": "$ref:trip.trip.date_to"
+   },
+   "save_as": "search"
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "F06",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "valid": true,
+  "score": 1.0,
+  "failed": []
+ }
+}

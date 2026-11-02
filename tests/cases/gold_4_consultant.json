@@ -1,0 +1,31 @@
+{
+ "note": "The correct booking for a consultant trip.",
+ "kind": "gold",
+ "task": "shipping-company-flight-booking",
+ "seed": 204,
+ "scenario": "consultant",
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": {
+    "seed": 204
+   },
+   "save_as": "trip"
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": false,
+    "refusal": "CONSULTANT",
+    "offer_id": "",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "valid": true,
+  "score": 1.0,
+  "failed": [],
+  "consultant": true
+ }
+}

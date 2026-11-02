@@ -1,0 +1,618 @@
+{
+ "source": "OurAirports, https://davidmegginson.github.io/ourairports-data/airports.csv (public domain)",
+ "fetched": "2026-11-02",
+ "airports": [
+  {
+   "code": "ATL",
+   "name": "Hartsfield Jackson Atlanta International Airport",
+   "city": "Atlanta",
+   "country": "US",
+   "continent": "NA",
+   "lat": 33.6367,
+   "lon": -84.4281
+  },
+  {
+   "code": "LAX",
+   "name": "Los Angeles International Airport",
+   "city": "Los Angeles",
+   "country": "US",
+   "continent": "NA",
+   "lat": 33.9425,
+   "lon": -118.408
+  },
+  {
+   "code": "ORD",
+   "name": "Chicago O'Hare International Airport",
+   "city": "Chicago",
+   "country": "US",
+   "continent": "NA",
+   "lat": 41.9786,
+   "lon": -87.9048
+  },
+  {
+   "code": "DFW",
+   "name": "Dallas Fort Worth International Airport",
+   "city": "Dallas-Fort Worth",
+   "country": "US",
+   "continent": "NA",
+   "lat": 32.8968,
+   "lon": -97.038
+  },
+  {
+   "code": "DEN",
+   "name": "Denver International Airport",
+   "city": "Denver",
+   "country": "US",
+   "continent": "NA",
+   "lat": 39.86,
+   "lon": -104.6738
+  },
+  {
+   "code": "JFK",
+   "name": "John F. Kennedy International Airport",
+   "city": "New York",
+   "country": "US",
+   "continent": "NA",
+   "lat": 40.6394,
+   "lon": -73.7793
+  },
+  {
+   "code": "SFO",
+   "name": "San Francisco International Airport",
+   "city": "San Francisco",
+   "country": "US",
+   "continent": "NA",
+   "lat": 37.6198,
+   "lon": -122.3748
+  },
+  {
+   "code": "SEA",
+   "name": "Seattle–Tacoma International Airport",
+   "city": "Seattle",
+   "country": "US",
+   "continent": "NA",
+   "lat": 47.4479,
+   "lon": -122.3103
+  },
+  {
+   "code": "LAS",
+   "name": "Harry Reid International Airport",
+   "city": "Las Vegas",
+   "country": "US",
+   "continent": "NA",
+   "lat": 36.0834,
+   "lon": -115.1518
+  },
+  {
+   "code": "MCO",
+   "name": "Orlando International Airport",
+   "city": "Orlando",
+   "country": "US",
+   "continent": "NA",
+   "lat": 28.4294,
+   "lon": -81.309
+  },
+  {
+   "code": "EWR",
+   "name": "Newark Liberty International Airport",
+   "city": "Newark",
+   "country": "US",
+   "continent": "NA",
+   "lat": 40.6894,
+   "lon": -74.1705
+  },
+  {
+   "code": "MIA",
+   "name": "Miami International Airport",
+   "city": "Miami",
+   "country": "US",
+   "continent": "NA",
+   "lat": 25.796,
+   "lon": -80.2898
+  },
+  {
+   "code": "CLT",
+   "name": "Charlotte Douglas International Airport",
+   "city": "Charlotte",
+   "country": "US",
+   "continent": "NA",
+   "lat": 35.214,
+   "lon": -80.9431
+  },
+  {
+   "code": "PHX",
+   "name": "Phoenix Sky Harbor International Airport",
+   "city": "Phoenix",
+   "country": "US",
+   "continent": "NA",
+   "lat": 33.4353,
+   "lon": -112.0059
+  },
+  {
+   "code": "IAH",
+   "name": "George Bush Intercontinental Airport",
+   "city": "Houston",
+   "country": "US",
+   "continent": "NA",
+   "lat": 29.9844,
+   "lon": -95.3414
+  },
+  {
+   "code": "BOS",
+   "name": "Boston Logan International Airport",
+   "city": "Boston",
+   "country": "US",
+   "continent": "NA",
+   "lat": 42.362,
+   "lon": -71.0079
+  },
+  {
+   "code": "MSP",
+   "name": "Minneapolis–Saint Paul International Airport / Wold–Chamberlain Field",
+   "city": "Minneapolis",
+   "country": "US",
+   "continent": "NA",
+   "lat": 44.8801,
+   "lon": -93.2217
+  },
+  {
+   "code": "DTW",
+   "name": "Detroit Metropolitan Wayne County Airport",
+   "city": "Detroit",
+   "country": "US",
+   "continent": "NA",
+   "lat": 42.2138,
+   "lon": -83.3538
+  },
+  {
+   "code": "PHL",
+   "name": "Philadelphia International Airport",
+   "city": "Philadelphia",
+   "country": "US",
+   "continent": "NA",
+   "lat": 39.8719,
+   "lon": -75.2411
+  },
+  {
+   "code": "LGA",
+   "name": "LaGuardia Airport",
+   "city": "New York",
+   "country": "US",
+   "continent": "NA",
+   "lat": 40.7772,
+   "lon": -73.8726
+  },
+  {
+   "code": "BWI",
+   "name": "Baltimore/Washington International Thurgood Marshall Airport",
+   "city": "Baltimore",
+   "country": "US",
+   "continent": "NA",
+   "lat": 39.1754,
+   "lon": -76.6683
+  },
+  {
+   "code": "SLC",
+   "name": "Salt Lake City International Airport",
+   "city": "Salt Lake City",
+   "country": "US",
+   "continent": "NA",
+   "lat": 40.7889,
+   "lon": -111.9799
+  },
+  {
+   "code": "SAN",
+   "name": "San Diego International Airport",
+   "city": "San Diego",
+   "country": "US",
+   "continent": "NA",
+   "lat": 32.7336,
+   "lon": -117.19
+  },
+  {
+   "code": "IAD",
+   "name": "Washington Dulles International Airport",
+   "city": "Dulles",
+   "country": "US",
+   "continent": "NA",
+   "lat": 38.9445,
+   "lon": -77.4558
+  },
+  {
+   "code": "DCA",
+   "name": "Ronald Reagan Washington National Airport",
+   "city": "Washington",
+   "country": "US",
+   "continent": "NA",
+   "lat": 38.8521,
+   "lon": -77.0377
+  },
+  {
+   "code": "TPA",
+   "name": "Tampa International Airport",
+   "city": "Tampa",
+   "country": "US",
+   "continent": "NA",
+   "lat": 27.9755,
+   "lon": -82.5332
+  },
+  {
+   "code": "AUS",
+   "name": "Austin Bergstrom International Airport",
+   "city": "Austin",
+   "country": "US",
+   "continent": "NA",
+   "lat": 30.1975,
+   "lon": -97.662
+  },
+  {
+   "code": "BNA",
+   "name": "Nashville International Airport",
+   "city": "Nashville",
+   "country": "US",
+   "continent": "NA",
+   "lat": 36.1245,
+   "lon": -86.6782
+  },
+  {
+   "code": "HNL",
+   "name": "Daniel K. Inouye International Airport",
+   "city": "Honolulu, Oahu",
+   "country": "US",
+   "continent": "OC",
+   "lat": 21.3184,
+   "lon": -157.9257
+  },
+  {
+   "code": "ANC",
+   "name": "Ted Stevens Anchorage International Airport",
+   "city": "Anchorage",
+   "country": "US",
+   "continent": "NA",
+   "lat": 61.179,
+   "lon": -149.9926
+  },
+  {
+   "code": "STL",
+   "name": "St. Louis Lambert International Airport",
+   "city": "St Louis",
+   "country": "US",
+   "continent": "NA",
+   "lat": 38.7487,
+   "lon": -90.37
+  },
+  {
+   "code": "YYZ",
+   "name": "Toronto Pearson International Airport",
+   "city": "Toronto",
+   "country": "CA",
+   "continent": "NA",
+   "lat": 43.6759,
+   "lon": -79.6294
+  },
+  {
+   "code": "YVR",
+   "name": "Vancouver International Airport",
+   "city": "Vancouver",
+   "country": "CA",
+   "continent": "NA",
+   "lat": 49.1939,
+   "lon": -123.184
+  },
+  {
+   "code": "YUL",
+   "name": "Montreal / Pierre Elliott Trudeau International Airport",
+   "city": "Montréal",
+   "country": "CA",
+   "continent": "NA",
+   "lat": 45.4678,
+   "lon": -73.7423
+  },
+  {
+   "code": "YHZ",
+   "name": "Halifax / Stanfield International Airport",
+   "city": "Halifax",
+   "country": "CA",
+   "continent": "NA",
+   "lat": 44.8808,
+   "lon": -63.5086
+  },
+  {
+   "code": "MEX",
+   "name": "Mexico City Benito Juárez International Airport",
+   "city": "Mexico City",
+   "country": "MX",
+   "continent": "NA",
+   "lat": 19.4358,
+   "lon": -99.0703
+  },
+  {
+   "code": "CUN",
+   "name": "Cancún International Airport",
+   "city": "Cancún",
+   "country": "MX",
+   "continent": "NA",
+   "lat": 21.0408,
+   "lon": -86.8735
+  },
+  {
+   "code": "LHR",
+   "name": "London Heathrow Airport",
+   "city": "London",
+   "country": "GB",
+   "continent": "EU",
+   "lat": 51.4707,
+   "lon": -0.4599
+  },
+  {
+   "code": "CDG",
+   "name": "Charles de Gaulle International Airport",
+   "city": "Paris (Roissy-en-France, Val-d'Oise)",
+   "country": "FR",
+   "continent": "EU",
+   "lat": 49.009,
+   "lon": 2.5541
+  },
+  {
+   "code": "FRA",
+   "name": "Frankfurt Main Airport",
+   "city": "Frankfurt am Main",
+   "country": "DE",
+   "continent": "EU",
+   "lat": 50.0267,
+   "lon": 8.5584
+  },
+  {
+   "code": "AMS",
+   "name": "Amsterdam Airport Schiphol",
+   "city": "Amsterdam",
+   "country": "NL",
+   "continent": "EU",
+   "lat": 52.3086,
+   "lon": 4.7639
+  },
+  {
+   "code": "MAD",
+   "name": "Adolfo Suárez Madrid–Barajas Airport",
+   "city": "Madrid",
+   "country": "ES",
+   "continent": "EU",
+   "lat": 40.4934,
+   "lon": -3.5722
+  },
+  {
+   "code": "FCO",
+   "name": "Rome–Fiumicino Leonardo da Vinci International Airport",
+   "city": "Rome",
+   "country": "IT",
+   "continent": "EU",
+   "lat": 41.8045,
+   "lon": 12.252
+  },
+  {
+   "code": "MUC",
+   "name": "Munich Airport",
+   "city": "Munich",
+   "country": "DE",
+   "continent": "EU",
+   "lat": 48.3538,
+   "lon": 11.7861
+  },
+  {
+   "code": "ZRH",
+   "name": "Zürich Airport",
+   "city": "Zurich",
+   "country": "CH",
+   "continent": "EU",
+   "lat": 47.4581,
+   "lon": 8.5481
+  },
+  {
+   "code": "DUB",
+   "name": "Dublin Airport",
+   "city": "Dublin",
+   "country": "IE",
+   "continent": "EU",
+   "lat": 53.4287,
+   "lon": -6.2621
+  },
+  {
+   "code": "LIS",
+   "name": "Lisbon Humberto Delgado Airport",
+   "city": "Lisbon",
+   "country": "PT",
+   "continent": "EU",
+   "lat": 38.7813,
+   "lon": -9.1359
+  },
+  {
+   "code": "CPH",
+   "name": "Copenhagen Kastrup Airport",
+   "city": "Copenhagen",
+   "country": "DK",
+   "continent": "EU",
+   "lat": 55.6179,
+   "lon": 12.656
+  },
+  {
+   "code": "BCN",
+   "name": "Josep Tarradellas Barcelona-El Prat Airport",
+   "city": "Barcelona",
+   "country": "ES",
+   "continent": "EU",
+   "lat": 41.2971,
+   "lon": 2.0785
+  },
+  {
+   "code": "VIE",
+   "name": "Vienna International Airport",
+   "city": "Vienna",
+   "country": "AT",
+   "continent": "EU",
+   "lat": 48.1103,
+   "lon": 16.5697
+  },
+  {
+   "code": "BRU",
+   "name": "Brussels Airport",
+   "city": "Zaventem",
+   "country": "BE",
+   "continent": "EU",
+   "lat": 50.9014,
+   "lon": 4.4844
+  },
+  {
+   "code": "OSL",
+   "name": "Oslo-Gardermoen International Airport",
+   "city": "Oslo (Gardermoen)",
+   "country": "NO",
+   "continent": "EU",
+   "lat": 60.1939,
+   "lon": 11.1004
+  },
+  {
+   "code": "ARN",
+   "name": "Stockholm-Arlanda Airport",
+   "city": "Stockholm",
+   "country": "SE",
+   "continent": "EU",
+   "lat": 59.6485,
+   "lon": 17.9288
+  },
+  {
+   "code": "KEF",
+   "name": "Keflavik International Airport",
+   "city": "Reykjavík",
+   "country": "IS",
+   "continent": "EU",
+   "lat": 63.985,
+   "lon": -22.6056
+  },
+  {
+   "code": "MAN",
+   "name": "Manchester Airport",
+   "city": "Manchester, Greater Manchester",
+   "country": "GB",
+   "continent": "EU",
+   "lat": 53.3494,
+   "lon": -2.2795
+  },
+  {
+   "code": "EDI",
+   "name": "Edinburgh Airport",
+   "city": "Ingliston, Edinburgh",
+   "country": "GB",
+   "continent": "EU",
+   "lat": 55.9501,
+   "lon": -3.3723
+  },
+  {
+   "code": "SNN",
+   "name": "Shannon Airport",
+   "city": "Shannon",
+   "country": "IE",
+   "continent": "EU",
+   "lat": 52.702,
+   "lon": -8.9248
+  },
+  {
+   "code": "NRT",
+   "name": "Narita International Airport",
+   "city": "Narita",
+   "country": "JP",
+   "continent": "AS",
+   "lat": 35.7686,
+   "lon": 140.3887
+  },
+  {
+   "code": "ICN",
+   "name": "Incheon International Airport",
+   "city": "Seoul",
+   "country": "KR",
+   "continent": "AS",
+   "lat": 37.4691,
+   "lon": 126.451
+  },
+  {
+   "code": "SIN",
+   "name": "Singapore Changi Airport",
+   "city": "Singapore",
+   "country": "SG",
+   "continent": "AS",
+   "lat": 1.3502,
+   "lon": 103.994
+  },
+  {
+   "code": "HKG",
+   "name": "Hong Kong International Airport",
+   "city": "Hong Kong",
+   "country": "HK",
+   "continent": "AS",
+   "lat": 22.3118,
+   "lon": 113.9149
+  },
+  {
+   "code": "DXB",
+   "name": "Dubai International Airport",
+   "city": "Dubai",
+   "country": "AE",
+   "continent": "AS",
+   "lat": 25.2498,
+   "lon": 55.371
+  },
+  {
+   "code": "DEL",
+   "name": "Indira Gandhi International Airport",
+   "city": "New Delhi",
+   "country": "IN",
+   "continent": "AS",
+   "lat": 28.5556,
+   "lon": 77.0952
+  },
+  {
+   "code": "BOM",
+   "name": "Chhatrapati Shivaji Maharaj International Airport",
+   "city": "Mumbai",
+   "country": "IN",
+   "continent": "AS",
+   "lat": 19.0887,
+   "lon": 72.8679
+  },
+  {
+   "code": "SYD",
+   "name": "Sydney Kingsford Smith International Airport",
+   "city": "Sydney (Mascot)",
+   "country": "AU",
+   "continent": "OC",
+   "lat": -33.9461,
+   "lon": 151.177
+  },
+  {
+   "code": "GRU",
+   "name": "São Paulo/Guarulhos–Governor André Franco Montoro International Airport",
+   "city": "São Paulo",
+   "country": "BR",
+   "continent": "SA",
+   "lat": -23.4313,
+   "lon": -46.47
+  },
+  {
+   "code": "BOG",
+   "name": "El Dorado International Airport",
+   "city": "Bogota",
+   "country": "CO",
+   "continent": "SA",
+   "lat": 4.7016,
+   "lon": -74.1469
+  },
+  {
+   "code": "JNB",
+   "name": "O.R. Tambo International Airport",
+   "city": "Johannesburg",
+   "country": "ZA",
+   "continent": "AF",
+   "lat": -26.1401,
+   "lon": 28.2468
+  }
+ ]
+}

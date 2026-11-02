@@ -1,0 +1,31 @@
+{
+ "note": "Searches a 20-day span.",
+ "kind": "malformed",
+ "task": "shipping-company-flight-booking",
+ "seed": 0,
+ "scenario": "domestic-economy",
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": {
+    "seed": 0
+   },
+   "save_as": "trip"
+  },
+  {
+   "tool": "search_flights",
+   "arguments": {
+    "seed": 0,
+    "run_id": "$ref:trip.run_id",
+    "origin": "$ref:trip.trip.origin.code",
+    "destination": "$ref:trip.trip.destination.code",
+    "date_from": "2027-03-13",
+    "date_to": "2027-04-02"
+   },
+   "save_as": "search"
+  }
+ ],
+ "expect": {
+  "error_contains": "days after date_from"
+ }
+}

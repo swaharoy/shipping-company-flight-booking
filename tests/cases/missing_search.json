@@ -1,0 +1,32 @@
+{
+ "note": "Books the right offer id without ever searching.",
+ "kind": "missing",
+ "task": "shipping-company-flight-booking",
+ "seed": 0,
+ "scenario": "domestic-economy",
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": {
+    "seed": 0
+   },
+   "save_as": "trip"
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "F10",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "valid": false,
+  "score": 0.0,
+  "failed": [
+   "searched"
+  ]
+ }
+}
