@@ -66,7 +66,10 @@ def date_rules(today):
     last = date_of(day_number(today) + BOOKING_HORIZON_DAYS)
     return [
         f"Today is {today} (UTC): a request made today is booked as of today.",
-        "Dates are YYYY-MM-DD.",
+        (
+            "Dates are YYYY-MM-DD, the day the flight leaves as a date where it leaves from (the local date at the "
+            "origin airport); flights leave between 06:00 and 22:00 local time."
+        ),
         (
             "For a fixed date, give the same day as date_from and date_to; for flexible dates, give a range: the "
             "flight may leave on any day in it."

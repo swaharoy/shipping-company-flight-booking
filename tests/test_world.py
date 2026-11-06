@@ -20,17 +20,17 @@ from plugin.rules import date_of, day_number, minute_number
 
 DAY = day_number("2026-12-03")
 GOLDEN = {
-    ("BOS", "LHR"): "50d72c670fc89bb3",
-    ("JFK", "LAX"): "29714dab177a0ee0",
-    ("ATL", "ORD"): "4d24bb5025b81881",
-    ("SFO", "NRT"): "a6c63dc0bc3d194f",
-    ("LHR", "CDG"): "21f9385aef622d41",
-    ("SYD", "JNB"): "8ea525ca636b9924",
+    ("BOS", "LHR"): "ed6ae84fdc300e66",
+    ("JFK", "LAX"): "e2eeec56ef8a830a",
+    ("ATL", "ORD"): "901e22a87e6e2b14",
+    ("SFO", "NRT"): "8378ff3a1418b2b1",
+    ("LHR", "CDG"): "e7d85a490aa502be",
+    ("SYD", "JNB"): "efbfae8e9b394acf",
 }
 US_AIRLINES = {row[1] for row in world.AIRLINES if row[2] == "US"}
 CHARTERS = {row[0] for row in world.CHARTERS}
 FLIGHT_NUMBER = re.compile(r"^[A-Z0-9]{2} [1-9]\d{0,3}$")
-LARGEST_SEARCH_CHARS = 50_000  # a 15-day search must stay well inside the hosted model's 65,536-token budget
+LARGEST_SEARCH_CHARS = 60_000  # a 15-day search must stay well inside the hosted model's 65,536-token budget
 LARGEST_DAY_CHARS = 6_000
 
 
@@ -81,7 +81,9 @@ def test_offers_are_well_formed_and_plausible() -> None:
             for offer in offers:
                 first, last = offer.segments[0], offer.segments[-1]
                 assert first.origin == origin and last.destination == destination
-                assert first.depart[:10] == date_of(day), "departs on its UTC day"
+                assert offer.depart_date == date_of(day), "departs on its local day at the origin"
+                assert offer.depart_local == world.time_text(minute_number(first.depart) + world.utc_offset(origin))
+                assert offer.depart_local[:10] == offer.depart_date
                 assert offer.total_air_minutes == sum(s.air_minutes for s in offer.segments)
                 assert offer.fare_cents > 0
                 assert 6 * 60 <= local_minute(first.depart, origin) < 22 * 60, "leaves in local daytime"
@@ -110,6 +112,47 @@ def test_offers_are_well_formed_and_plausible() -> None:
                     assert first.bag_fee_cents == 0
                 if offer.cabin.value == "FIRST":
                     assert "F" in airline[6]
+
+
+def local_departures(origins, days=range(DAY, DAY + 7)) -> dict[str, list[int]]:
+    """{origin: every first departure's local minute of the day} from each origin to every other airport."""
+    found = {}
+    for origin in origins:
+        found[origin] = [
+            local_minute(offer.segments[0].depart, origin)
+            for destination in CODES if destination != origin
+            for day in days
+            for offer in world.day_offers(origin, destination, day)
+        ]
+    return found
+
+
+def test_west_coast_flights_leave_in_the_evening_too() -> None:
+    """UTC-8: a departure after 16:00 local is on the next UTC date, which 0.2.0 never generated."""
+    for origin, minutes in local_departures(("SFO", "LAX", "SEA")).items():
+        assert sum(minute >= 16 * 60 for minute in minutes) >= 50, origin
+        assert max(minutes) >= 21 * 60, origin
+
+
+def test_asian_flights_leave_in_the_early_morning_too() -> None:
+    """UTC+8/+9: a departure before 09:00 local is on the previous UTC date, which 0.2.0 never generated."""
+    for origin, minutes in local_departures(("NRT", "ICN", "HKG", "SIN")).items():
+        assert sum(minute < 9 * 60 for minute in minutes) >= 20, origin
+        assert min(minutes) < 7 * 60, origin
+
+
+def test_every_departure_leaves_from_06_00_to_21_55_local() -> None:
+    minutes = [minute for found in local_departures(CODES, (DAY, DAY + 1)).values() for minute in found]
+    assert len(minutes) > 10_000
+    assert min(minutes) == 6 * 60 and max(minutes) == 21 * 60 + 55
+    assert all(minute % 5 == 0 for minute in minutes)
+
+
+def test_a_late_departure_west_of_utc_is_numbered_by_its_local_date() -> None:
+    offers = [o for d in CODES if d != "SFO" for o in world.day_offers("SFO", d, DAY)]
+    late = next(o for o in offers if o.depart_local[11:] >= "16:00")
+    assert late.depart_date == "2026-12-03" and late.offer_id.startswith("20261203-")
+    assert late.segments[0].depart[:10] == "2026-12-04", "the UTC date is the next day"
 
 
 def test_live_searches_hold_the_realistic_traps() -> None:
@@ -145,6 +188,7 @@ def test_searches_fit_the_hosted_context() -> None:
         largest = max(largest, len(json.dumps([plain_output(offer) for offer in offers])))
         day = world.day_offers(origin, destination, DAY)
         largest_day = max(largest_day, len(json.dumps([plain_output(offer) for offer in day])))
+    print(f"largest 15-day search: {largest} characters; largest day: {largest_day}")
     assert largest <= LARGEST_SEARCH_CHARS, largest
     assert largest_day <= LARGEST_DAY_CHARS, largest_day
 

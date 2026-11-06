@@ -1,0 +1,50 @@
+{
+ "note": "A San Francisco flight at 2026-12-04 18:00 local, the day before the fixed date: its UTC date (2026-12-05 02:00) is the trip's date, its local date is not.",
+ "kind": "wrong",
+ "task": "shipping-company-flight-booking",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "SFO",
+  "destination": "JFK",
+  "date_from": "2026-12-05",
+  "date_to": "2026-12-05",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": "$request",
+   "save_as": "trip"
+  },
+  {
+   "tool": "search_flights",
+   "save_as": "search",
+   "arguments": {
+    "run_id": "$ref:trip.run_id",
+    "origin": "$ref:trip.trip.origin.code",
+    "destination": "$ref:trip.trip.destination.code",
+    "date_from": "2026-12-04",
+    "date_to": "$ref:trip.trip.date_to"
+   }
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "20261204-04",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "valid": false,
+  "score": 0.0,
+  "failed": [
+   "dates"
+  ]
+ }
+}

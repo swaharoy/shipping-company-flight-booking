@@ -144,8 +144,9 @@ def trip_matches_request(trip, request):
 
 
 def departure_date(offer):
-    """The day an offer departs: the date of its first segment's departure."""
-    return offer.segments[0].depart[:10]
+    """The day an offer departs: the local date of its first departure at the origin airport (its segments'
+    times are UTC, so their date may differ)."""
+    return offer.depart_date
 
 
 def is_international(trip):
@@ -174,13 +175,13 @@ def cabin_allowed(trip, offer):
 
 
 def in_window(trip, offer):
-    """R4: departs on a day from date_from to date_to (the same day when FIXED)."""
+    """R4: departs on a day from date_from to date_to (the same day when FIXED), local dates at the origin."""
     day = day_number(departure_date(offer))
     return day_number(trip.date_from) <= day <= day_number(trip.date_to)
 
 
 def advance_ok(trip, offer):
-    """R4: departs at least 7 days after the booking date (exactly 7 is fine)."""
+    """R4: departs, by the local date at the origin, at least 7 days after the booking date (exactly 7 is fine)."""
     return day_number(departure_date(offer)) - day_number(trip.booking_date) >= ADVANCE_DAYS
 
 
@@ -243,6 +244,8 @@ def offer_plain(offer):
         "cabin": offer.cabin.value,
         "fare_cents": offer.fare_cents,
         "total_air_minutes": offer.total_air_minutes,
+        "depart_date": offer.depart_date,
+        "depart_local": offer.depart_local,
         "segments": [
             {
                 "origin": segment.origin,

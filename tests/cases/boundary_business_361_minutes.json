@@ -54,13 +54,15 @@
      "cabin": "ECONOMY",
      "fare_cents": 40000,
      "total_air_minutes": 400,
+     "depart_date": "2026-12-03",
+     "depart_local": "2026-12-03 14:00",
      "segments": [
       {
        "origin": "JFK",
        "destination": "BOG",
        "flight_number": "BA 100",
-       "depart": "2026-12-03 14:00",
-       "arrive": "2026-12-03 20:40",
+       "depart": "2026-12-03 19:00",
+       "arrive": "2026-12-04 01:40",
        "air_minutes": 400,
        "bag_fee_cents": 0
       }
@@ -73,13 +75,15 @@
      "cabin": "BUSINESS",
      "fare_cents": 150000,
      "total_air_minutes": 361,
+     "depart_date": "2026-12-03",
+     "depart_local": "2026-12-03 14:00",
      "segments": [
       {
        "origin": "JFK",
        "destination": "DUB",
        "flight_number": "BA 100",
-       "depart": "2026-12-03 14:00",
-       "arrive": "2026-12-03 17:20",
+       "depart": "2026-12-03 19:00",
+       "arrive": "2026-12-03 22:20",
        "air_minutes": 200,
        "bag_fee_cents": 0
       },
@@ -87,8 +91,8 @@
        "origin": "DUB",
        "destination": "BOG",
        "flight_number": "BA 101",
-       "depart": "2026-12-03 18:50",
-       "arrive": "2026-12-03 21:31",
+       "depart": "2026-12-03 23:50",
+       "arrive": "2026-12-04 02:31",
        "air_minutes": 161,
        "bag_fee_cents": 0
       }

@@ -19,7 +19,7 @@ realism only: nothing here is a real fare or a real timetable.
 |---|---|---|
 | `booking_requirements` | What a booking request must give, field by field with examples (read from the contract), the date rules, the airports to choose from, and an example request, as of today. Nothing about the policy: applying it is the agent's job | `src/plugin/requirements.py`, `src/plugin/guide.py` |
 | `get_trip` | Begins a booking run for a trip request: the trip as booked today (traveller, airports with country and continent, booking date, fixed or flexible dates, business and checked-bag wishes) and its `run_id` | `src/plugin/trip.py` |
-| `search_flights` | The one-way offers on a route departing on the searched days (at most 14 days apart, today or later): airline, flight numbers, operator, cabin, fare, minutes in the air and bag fees | `src/plugin/search.py` |
+| `search_flights` | The one-way offers on a route departing on the searched days (local dates at the origin airport, at most 14 days apart, today or later): local departure date and time, airline, flight numbers, operator, cabin, fare, minutes in the air and bag fees | `src/plugin/search.py` |
 | `solve_booking` | The answer key: the trip as booked today, its offers and the booking the rules require. NanoAgent runs it before the agent, out of its sight; it is never one of the agent's tools | `src/plugin/solve.py` |
 
 ### Tasks
@@ -33,8 +33,9 @@ realism only: nothing here is a real fare or a real timetable.
 The booking task's input is the trip request, which the chat fills from plain words such as "book Maya
 Chen, an employee, Boston to London Heathrow any day from Dec 3 to Dec 5, business class and a checked
 bag": `traveller_name`, `traveller_type` (`EMPLOYEE`, `NON_EMPLOYEE` or `CONSULTANT`), `origin` and
-`destination` (airport codes from the list), `date_from` and `date_to` (the same day for a fixed date, a
-range of up to 14 days for flexible dates), `wants_business` and `wants_checked_bag`. The booking date is
+`destination` (airport codes from the list), `date_from` and `date_to` (local dates at the origin airport:
+the same day for a fixed date, a range of up to 14 days for flexible dates), `wants_business` and
+`wants_checked_bag`. The booking date is
 today (UTC), read when the answer key is pinned; requests leaving before today or more than 330 days
 ahead are refused.
 
@@ -49,7 +50,7 @@ and dates, then `submit` (a consultant's trip needs no search). It submits `run_
 | R1 | "Travel expenses for authorized consultants should not be directly billed to the Company" | A `CONSULTANT` is never booked: refusal `CONSULTANT` |
 | R2 | Non-employee travel "should be arranged through the PB designated travel agencies" | `EMPLOYEE` and `NON_EMPLOYEE` follow the same rules; the agent acts as the agency |
 | R3 | "All air travel is by commercial airlines" | Never a `CHARTER` offer |
-| R4 | "Tickets should be booked at least seven days in advance, if possible" | Depart in the trip's dates; on a `FLEXIBLE` trip, 7 or more days after booking when any allowed offer in the window does (exactly 7 is fine) |
+| R4 | "Tickets should be booked at least seven days in advance, if possible" | The offer's `depart_date` (its local departure date at the origin airport) is in the trip's dates; on a `FLEXIBLE` trip, 7 or more days after booking when any allowed offer in the window does (exactly 7 is fine) |
 | R5 | Coach within the U.S.; business "only on international flights greater than six hours… or transatlantic flights (of any duration)"; "First class travel will not be reimbursed" | Never `FIRST`. `BUSINESS` only when wanted and the trip is transatlantic (NA and EU), or international with an offer flying more than 360 minutes; then business whenever such an offer exists |
 | R6 | "Contractors must book the lowest cost fare, within $100 USD per trip" | Fare at most the lowest allowed fare in the booked cabin + 10000 cents |
 | R7 | "One checked-bag fee (up to a maximum of $30) per flight segment is reimbursable" | Out-of-pocket = Σ max(0, bag fee − 3000) per segment when a bag is wanted; then the lowest out-of-pocket among fares within $100 must be booked |
@@ -68,7 +69,10 @@ on any booking date, and the verifier rebuilds every search the agent made. Its 
 which is a modelling choice, not data:
 
 - **Airports:** 68 large airports from OurAirports (public domain), fetched 2026-11-02, with their
-  standard-time UTC offsets. Times are UTC; departures leave between 06:00 and 22:00 local time.
+  standard-time UTC offsets. A flight's day is the local date at its origin airport, and flights leave
+  from 06:00 to 21:55 local time on it at every airport. Each offer gives that day (`depart_date`) and its
+  local departure (`depart_local`); segment times are UTC, so an evening departure west of Greenwich (or an
+  early one east of it) shows another UTC date. Offer ids (`20261203-04`) use the local date.
 - **Airlines:** 29 real airlines, each with its country, hubs among the 68 airports, longest nonstop and
   cabins sold. An airline sells a nonstop when one end is its hub, and connections through its own hubs that
   add at most 35% distance; a domestic trip is sold only by that country's airlines, and no airline flies a

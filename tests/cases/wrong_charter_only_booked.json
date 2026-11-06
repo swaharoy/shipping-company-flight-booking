@@ -54,13 +54,15 @@
      "cabin": "ECONOMY",
      "fare_cents": 30000,
      "total_air_minutes": 400,
+     "depart_date": "2026-12-03",
+     "depart_local": "2026-12-03 14:00",
      "segments": [
       {
        "origin": "BOS",
        "destination": "LHR",
        "flight_number": "CHARTER",
-       "depart": "2026-12-03 14:00",
-       "arrive": "2026-12-03 20:40",
+       "depart": "2026-12-03 19:00",
+       "arrive": "2026-12-04 01:40",
        "air_minutes": 400,
        "bag_fee_cents": 0
       }
@@ -73,13 +75,15 @@
      "cabin": "FIRST",
      "fare_cents": 90000,
      "total_air_minutes": 400,
+     "depart_date": "2026-12-03",
+     "depart_local": "2026-12-03 14:00",
      "segments": [
       {
        "origin": "BOS",
        "destination": "LHR",
        "flight_number": "BA 100",
-       "depart": "2026-12-03 14:00",
-       "arrive": "2026-12-03 20:40",
+       "depart": "2026-12-03 19:00",
+       "arrive": "2026-12-04 01:40",
        "air_minutes": 400,
        "bag_fee_cents": 0
       }

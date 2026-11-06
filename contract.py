@@ -128,7 +128,6 @@ class Topic(Enum):
 
 
 RUN_ID = "This booking run's id, as get_trip returned it"
-DATE = "A UTC calendar date, YYYY-MM-DD"
 TIME = "A UTC time, YYYY-MM-DD HH:MM"
 CODE = "An IATA airport code, e.g. JFK"
 CENTS = "An amount in US cents"
@@ -151,8 +150,10 @@ class Trip(Output):
     destination: Annotated[Airport, "The airport the trip goes to"]
     booking_date: Annotated[str, "Today, the day the flight is booked, YYYY-MM-DD (UTC)"]
     date_mode: Annotated[DateMode, "FIXED: depart on date_from; FLEXIBLE: depart any day from date_from to date_to"]
-    date_from: Annotated[str, "The first allowed departure day, YYYY-MM-DD"]
-    date_to: Annotated[str, "The last allowed departure day, YYYY-MM-DD (date_from when FIXED)"]
+    date_from: Annotated[str, "The first allowed departure day, YYYY-MM-DD (local date at the origin airport)"]
+    date_to: Annotated[
+        str, "The last allowed departure day, YYYY-MM-DD (local date at the origin airport; date_from when FIXED)"
+    ]
     wants_business: Annotated[bool, "Whether the traveller asks for business class"]
     wants_checked_bag: Annotated[bool, "Whether the traveller checks one bag"]
 
@@ -170,12 +171,14 @@ class Segment(Output):
 
 @dataclass
 class Offer(Output):
-    offer_id: Annotated[str, "The offer's id: its departure date and number, e.g. 20261203-04"]
+    offer_id: Annotated[str, "The offer's id: its local departure date at the origin and number, e.g. 20261203-04"]
     carrier: Annotated[str, "The airline or charter operator"]
     operator: Annotated[Operator, "COMMERCIAL airline or CHARTER service"]
     cabin: Annotated[Cabin, "The cabin class"]
     fare_cents: Annotated[int, "The fare, in cents"]
     total_air_minutes: Annotated[int, "Minutes in the air over all segments"]
+    depart_date: Annotated[str, "The day the offer departs, YYYY-MM-DD: the local date at the origin airport"]
+    depart_local: Annotated[str, "When the first flight leaves, YYYY-MM-DD HH:MM local time at the origin airport"]
     segments: Annotated[list[Segment], "The flights, in order"]
 
 
@@ -187,9 +190,13 @@ class TripInput(Output):
     ]
     origin: Annotated[AirportCode, "The airport to leave from, by IATA code (e.g. BOS for Boston)"]
     destination: Annotated[AirportCode, "The airport to fly to, by IATA code (e.g. LHR for London Heathrow)"]
-    date_from: Annotated[str, "The first day the traveller can leave, YYYY-MM-DD, today or later"]
+    date_from: Annotated[
+        str, "The first day the traveller can leave, YYYY-MM-DD (local date at the origin airport), today or later"
+    ]
     date_to: Annotated[
-        str, "The last day the traveller can leave, YYYY-MM-DD: date_from for a fixed date, up to 14 days later"
+        str,
+        "The last day the traveller can leave, YYYY-MM-DD (local date at the origin airport): date_from for a fixed "
+        "date, up to 14 days later",
     ]
     wants_business: Annotated[bool, "Whether the traveller asks for business class (the policy decides if it is allowed)"]
     wants_checked_bag: Annotated[bool, "Whether the traveller checks one bag"]
@@ -206,8 +213,12 @@ class SearchInput(Output):
     run_id: Annotated[str, "This booking run's id, as get_trip returned it; empty to only look, outside a booking"]
     origin: Annotated[AirportCode, "The airport to leave from"]
     destination: Annotated[AirportCode, "The airport to fly to"]
-    date_from: Annotated[str, "The first departure day to search, YYYY-MM-DD, today or later"]
-    date_to: Annotated[str, "The last departure day to search, YYYY-MM-DD, at most 14 days after date_from"]
+    date_from: Annotated[
+        str, "The first departure day to search, YYYY-MM-DD (local date at the origin airport), today or later"
+    ]
+    date_to: Annotated[
+        str, "The last departure day to search, YYYY-MM-DD (local date at the origin airport), at most 14 days later"
+    ]
 
 
 @dataclass

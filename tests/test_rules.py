@@ -32,15 +32,18 @@ def trip(origin="JFK", destination="LAX", *, kind=TravellerType.EMPLOYEE, mode=D
 
 
 def offer(offer_id, fare, *, cabin=Cabin.ECONOMY, operator=Operator.COMMERCIAL, day="2027-03-20", minutes=(300,),
-          fees=None, origin="JFK", destination="LAX") -> Offer:
+          fees=None, origin="JFK", destination="LAX", utc_day=None) -> Offer:
+    """An offer leaving at 10:00 local on ``day`` (the local date at the origin); its segments' UTC times are on
+    ``utc_day`` (``day`` unless given)."""
     fees = fees or tuple(0 for _ in minutes)
     stops = ["HUB"] * (len(minutes) - 1)
     points = [origin, *stops, destination]
+    utc_day = utc_day or day
     segments = [
-        Segment(points[i], points[i + 1], f"TA {i + 1}", f"{day} 10:00", f"{day} 15:00", air, fee)
+        Segment(points[i], points[i + 1], f"TA {i + 1}", f"{utc_day} 15:00", f"{utc_day} 20:00", air, fee)
         for i, (air, fee) in enumerate(zip(minutes, fees, strict=True))
     ]
-    return Offer(offer_id, "Test Air", operator, cabin, fare, sum(minutes), segments)
+    return Offer(offer_id, "Test Air", operator, cabin, fare, sum(minutes), day, f"{day} 10:00", segments)
 
 
 def test_dates_round_trip_and_reject_impossible_days() -> None:
@@ -137,6 +140,19 @@ def test_a_flexible_window_all_under_7_days_takes_any_day() -> None:
     offers = [offer("A", 10_000, day="2027-03-02"), offer("B", 15_000, day="2027-03-06"),
               offer("OUT", 1_000, day="2027-03-07")]
     assert solve(t, offers).correct == ["A", "B"]
+
+
+def test_the_dates_are_the_local_date_at_the_origin_not_the_utc_date() -> None:
+    """R4 reads depart_date: an evening flight west of UTC is on the next UTC date, yet inside the window; a
+    flight the day before the window is outside it, though its UTC date is the window's first day."""
+    t = trip(mode=DateMode.FLEXIBLE, booking="2027-03-01", start="2027-03-10", end="2027-03-12")
+    inside = offer("LAST", 20_000, day="2027-03-12", utc_day="2027-03-13")
+    before = offer("BEFORE", 10_000, day="2027-03-09", utc_day="2027-03-10")
+    assert solve(t, [inside, before]).correct == ["LAST"]
+    # The 7-day rule too: local 2027-03-07 is 6 days ahead, though its UTC date is 7 days ahead.
+    t = trip(mode=DateMode.FLEXIBLE, booking="2027-03-01", start="2027-03-05", end="2027-03-09")
+    offers = [offer("SIX", 10_000, day="2027-03-07", utc_day="2027-03-08"), offer("SEVEN", 30_000, day="2027-03-08")]
+    assert solve(t, offers).correct == ["SEVEN"]
 
 
 def test_a_fixed_date_is_kept_even_under_7_days() -> None:

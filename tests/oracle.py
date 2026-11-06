@@ -3,11 +3,21 @@ date arithmetic, its own order of tests), to cross-check the answer key offer by
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta
+
+from plugin.world import AIRPORTS
+
+OFFSET = {row[0]: row[7] for row in AIRPORTS}  # standard-time UTC offset, minutes
 
 
 def day(text: str) -> date:
     return date.fromisoformat(text[:10])
+
+
+def local_day(offer) -> date:
+    """The local date at the origin of the first UTC departure, worked out here from the segment's UTC time."""
+    first = offer.segments[0]
+    return (datetime.fromisoformat(first.depart) + timedelta(minutes=OFFSET[first.origin])).date()
 
 
 def booking_answer(trip, offers) -> tuple[str, set[str], int]:
@@ -20,7 +30,7 @@ def booking_answer(trip, offers) -> tuple[str, set[str], int]:
     def permitted(offer) -> bool:
         if offer.operator.value == "CHARTER" or offer.cabin.value == "FIRST":
             return False
-        if not day(trip.date_from) <= day(offer.segments[0].depart) <= day(trip.date_to):
+        if not day(trip.date_from) <= local_day(offer) <= day(trip.date_to):
             return False
         if offer.cabin.value == "BUSINESS":
             return trip.wants_business and (transatlantic or (international and offer.total_air_minutes > 360))
@@ -28,7 +38,7 @@ def booking_answer(trip, offers) -> tuple[str, set[str], int]:
 
     candidates = [offer for offer in offers if permitted(offer)]
     if trip.date_mode.value == "FLEXIBLE":
-        ahead = [o for o in candidates if (day(o.segments[0].depart) - day(trip.booking_date)).days >= 7]
+        ahead = [o for o in candidates if (local_day(o) - day(trip.booking_date)).days >= 7]
         candidates = ahead or candidates
     if not candidates:
         return "NO_COMPLIANT_FLIGHT", set(), 0

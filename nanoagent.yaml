@@ -1,7 +1,7 @@
 _ > nanoagent.plugin.v0001.ManifestConfig:
 id: shipping-company-flight-booking
 name: Shipping Company Flight Booking
-version: 0.2.0
+version: 0.2.1
 status: ready
 spec: nanoagent.plugin/v0001
 
@@ -22,7 +22,7 @@ tools > dict[contract.Tool, nanoagent.plugin.v0001.ToolConfig]:
   get_trip:
     description: Begin a booking run for a trip request, booked as of today, and show the trip (traveller, route, booking date, dates, business and checked-bag wishes)
   search_flights:
-    description: List the one-way flight offers on a route departing on the searched days, with airline, flight numbers, cabin, fare, operator, minutes in the air and bag fees (simulated fares and schedules)
+    description: List the one-way flight offers on a route departing on the searched days (local dates at the origin), with local departure date and time, airline, flight numbers, cabin, fare, operator, minutes in the air and bag fees (simulated fares and schedules)
   solve_booking:
     description: The answer key, never given to the agent - the booking the policy requires for a trip request, as of today
 
@@ -39,21 +39,21 @@ tasks > dict[contract.Task, nanoagent.plugin.v0001.TaskConfig]:
     runner: tool
     tools: [search_flights]
     reference: null
-    instructions: Call search_flights with an empty run_id, the route's airport codes and the days to search (today or later, at most 14 days apart), and show the offers it returns.
+    instructions: Call search_flights with an empty run_id, the route's airport codes and the days to search (local dates at the origin airport, today or later, at most 14 days apart), and show the offers it returns.
   shipping-company-flight-booking:
     description: Book a one-way flight for a traveller's trip request under the shipping company's air-travel policy
     runner: agent
     tools: [get_trip, search_flights]
     reference: solve_booking
     instructions: |-
-      Book one one-way flight for a traveller of a shipping company, under its air-travel policy (based on Pitney Bowes' public Travel and Expense Policy). Money is in US cents, times are UTC. Fares and schedules are simulated.
+      Book one one-way flight for a traveller of a shipping company, under its air-travel policy (based on Pitney Bowes' public Travel and Expense Policy). Money is in US cents. Segment times are UTC; date_from, date_to and each offer's depart_date and depart_local are local at the origin airport. Fares and schedules are simulated.
       Plan: exactly three tool calls. (1) get_trip with the task input exactly as given. (2) search_flights with the run_id get_trip returned, the trip's origin and destination codes, and its date_from and date_to, as given; skip this call only when traveller_type is CONSULTANT. (3) submit.
       Rules, in order:
       R1. traveller_type CONSULTANT: never book: submit booked false, refusal CONSULTANT.
       R2. EMPLOYEE and NON_EMPLOYEE follow the same rules (for a non-employee you act as the company's travel agency).
       R3. Never an offer whose operator is CHARTER.
       R5a. Never cabin FIRST. A BUSINESS offer is allowed only if wants_business is true and either the trip is transatlantic (one airport's continent is NA and the other's EU), whatever its length, or the trip is international (origin or destination country is not US) and the offer's total_air_minutes is more than 360 (exactly 360 is not enough). ECONOMY is always allowed.
-      R4. The offer departs (the date of its first segment's depart) on a day from date_from to date_to. For a FLEXIBLE trip: if any offer allowed by R3 and R5a in that window departs 7 or more days after booking_date, only such offers may be booked (exactly 7 days is fine); otherwise any day in the window.
+      R4. The offer's depart_date (its local departure date at the origin airport, not the UTC date of its segments) is a day from date_from to date_to. For a FLEXIBLE trip: if any offer allowed by R3 and R5a in that window has a depart_date 7 or more days after booking_date, only such offers may be booked (exactly 7 days is fine); otherwise any day in the window.
       R5b. If any BUSINESS offer is still allowed, book BUSINESS; otherwise book ECONOMY. Domestic trips are always ECONOMY.
       R6. The fare_cents must be at most the lowest fare_cents among the still-allowed offers in that cabin plus 10000 ($100).
       R7. Checked bag: the company reimburses up to 3000 cents per segment. If wants_checked_bag is true, the traveller's out-of-pocket is the sum over the offer's segments of max(0, bag_fee_cents - 3000); among the offers allowed by R6 you must book one with the lowest out-of-pocket (any of them when tied). If wants_checked_bag is false, out-of-pocket is 0 and any offer allowed by R6 is fine.

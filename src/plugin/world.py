@@ -3,7 +3,9 @@
 
 The offers on a route and departure day come from a SHA-256 stream keyed by the route and the day only, so
 the same search gives the same offers on every machine, on any booking date, and the verifier can rebuild
-any search the agent made. Nothing here is real fare or schedule data: airline names are used for realism
+any search the agent made. A departure day is the local date at the origin airport: flights leave from 06:00
+to 21:55 local time on it, and their segment times are given in UTC, so a late evening departure west of
+Greenwich lands on the next UTC date and an early morning one east of it on the previous. Nothing here is real fare or schedule data: airline names are used for realism
 only. It imports only modules a verifier may use, contract, and the shared rules.
 """
 
@@ -14,13 +16,13 @@ from functools import cache
 
 from contract import Airport, Cabin, Offer, Operator, Segment
 
-from .rules import SEARCH_MAX_DAYS, date_of, day_number
+from .rules import SEARCH_MAX_DAYS, date_of, day_number, minute_number
 
 NOTE = "Simulated fares and schedules; airline names are used for realism only."
 
 # Airports: OurAirports (https://ourairports.com/data/, public domain), fetched 2026-11-02, trimmed to 68
 # large airports. The last column is the airport's standard-time UTC offset in minutes (no daylight
-# saving), used only to keep departures in local daytime.
+# saving): a flight's day and its 06:00-21:55 departure window are local at its origin.
 # (code, name, city, country, continent, latitude, longitude, UTC offset in minutes)
 AIRPORTS = (
     ('ATL', 'Hartsfield Jackson Atlanta International Airport', 'Atlanta', 'US', 'NA', 33.6367, -84.4281, -300),
@@ -214,6 +216,11 @@ def country(code):
     return airport_table()[code][3]
 
 
+def utc_offset(code):
+    """The airport's standard-time UTC offset, in minutes."""
+    return airport_table()[code][7]
+
+
 @cache
 def distance_km(origin, destination):
     """Great-circle distance between two airports, in whole km."""
@@ -266,13 +273,16 @@ def time_text(minute):
     return f"{date_of(minute // 1440)} {minute % 1440 // 60:02d}:{minute % 60:02d}"
 
 
+def local_text(code, time):
+    """The local time at airport ``code``, YYYY-MM-DD HH:MM, of a UTC YYYY-MM-DD HH:MM time."""
+    return time_text(minute_number(time) + utc_offset(code))
+
+
 def departure_minute(rng, code, day):
-    """A UTC minute on ``day`` that is 06:00-21:55 local time at airport ``code``, in 5-minute steps."""
-    offset = airport_table()[code][7]
-    low = max(FIRST_DEPARTURE, offset)  # local minute of the day's 00:00 UTC is ``offset``
-    high = min(LAST_DEPARTURE, 1440 + offset) - 5
-    local = rng.randint(low // 5, high // 5) * 5
-    return day * 1440 + local - offset
+    """The UTC minute of a departure at 06:00-21:55 local time, in 5-minute steps, on day number ``day``
+    (the local date at airport ``code``)."""
+    local = rng.randint(FIRST_DEPARTURE // 5, LAST_DEPARTURE // 5 - 1) * 5
+    return day * 1440 + local - utc_offset(code)
 
 
 def flight_number(code, origin, destination):
@@ -382,7 +392,7 @@ def charter_draft(rng, origin, destination, day, direct):
 
 
 def day_offers(origin, destination, day):
-    """Every offer on a route departing on day number ``day``, in departure order, numbered <date>-01, ...
+    """Every offer on a route departing on day number ``day`` (the local date at the origin), in departure order, numbered <date>-01, ...
     Fresh copies on each call, so no caller can change another's offers."""
     return tuple(
         dataclasses.replace(offer, segments=[dataclasses.replace(segment) for segment in offer.segments])
@@ -406,6 +416,8 @@ def built_day(origin, destination, day):
             cabin=cabin,
             fare_cents=fare,
             total_air_minutes=sum(segment.air_minutes for segment in segments),
+            depart_date=local_text(origin, segments[0].depart)[:10],
+            depart_local=local_text(origin, segments[0].depart),
             segments=segments,
         )
         for index, (_, fare, _, carrier, operator, cabin, segments) in enumerate(drafts, start=1)
@@ -413,7 +425,8 @@ def built_day(origin, destination, day):
 
 
 def offers_between(origin, destination, date_from, date_to):
-    """Every offer on a route departing on a day from date_from to date_to (at most SEARCH_MAX_DAYS apart)."""
+    """Every offer on a route departing on a day from date_from to date_to (local dates at the origin, at most
+    SEARCH_MAX_DAYS apart)."""
     first, last = day_number(date_from), day_number(date_to)
     if not 0 <= last - first <= SEARCH_MAX_DAYS:
         raise ValueError(f"date_to must be 0 to {SEARCH_MAX_DAYS} days after date_from")

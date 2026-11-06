@@ -63,6 +63,7 @@ function offersTable(offers) {
   return dataTable({
     columns: [
       { key: "offer_id", label: "Offer", primary: true },
+      { key: "depart_local", label: "Departs (local)" },
       { key: "depart", label: "Departs (UTC)", value: (o) => o.segments[0].depart },
       { key: "arrive", label: "Arrives (UTC)", value: (o) => o.segments.at(-1).arrive },
       { key: "route", label: "Route", value: route },

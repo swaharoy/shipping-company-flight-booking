@@ -1,0 +1,104 @@
+{
+ "note": "SFO at 19:00 local the day before date_from is 03:00 UTC on date_from: outside the window.",
+ "kind": "boundary",
+ "task": "shipping-company-flight-booking",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "SFO",
+  "destination": "JFK",
+  "date_from": "2026-12-01",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": "$request",
+   "save_as": "trip"
+  },
+  {
+   "tool": "search_flights",
+   "save_as": "search",
+   "arguments": {
+    "run_id": "$ref:trip.run_id",
+    "origin": "$ref:trip.trip.origin.code",
+    "destination": "$ref:trip.trip.destination.code",
+    "date_from": "2026-11-30",
+    "date_to": "$ref:trip.trip.date_to"
+   }
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "20261130-01",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "world": {
+  "route": [
+   "SFO",
+   "JFK"
+  ],
+  "offers": {
+   "2026-11-30": [
+    {
+     "offer_id": "20261130-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 20000,
+     "total_air_minutes": 400,
+     "depart_date": "2026-11-30",
+     "depart_local": "2026-11-30 19:00",
+     "segments": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "flight_number": "BA 100",
+       "depart": "2026-12-01 03:00",
+       "arrive": "2026-12-01 09:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ],
+   "2026-12-03": [
+    {
+     "offer_id": "20261203-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 30000,
+     "total_air_minutes": 400,
+     "depart_date": "2026-12-03",
+     "depart_local": "2026-12-03 19:00",
+     "segments": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "flight_number": "BA 100",
+       "depart": "2026-12-04 03:00",
+       "arrive": "2026-12-04 09:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "expect": {
+  "valid": false,
+  "score": 0.0,
+  "failed": [
+   "dates"
+  ]
+ }
+}

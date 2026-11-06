@@ -12,7 +12,7 @@ import verifier
 import verifier.world
 from contract import TASKS, TOOLS, AirportCode, Offer, SearchInput, SolveOutput, Task, Tool, TripInput
 from plugin import get_trip, search_flights, solve_booking, world
-from plugin.rules import date_of, day_number
+from plugin.rules import date_of, day_number, minute_number
 
 BOOK = Task.BOOK_FLIGHT.value
 CODES = [member.value for member in AirportCode]
@@ -106,7 +106,7 @@ def tool_input(tool: str, value: dict) -> dict:
 
 @contextmanager
 def hand_built(offers: dict[str, list[dict]], origin: str = "BOS", destination: str = "LHR"):
-    """The world replaced, in the tools and the verifier alike, by hand-built offers: {date: [plain offers]}
+    """The world replaced, in the tools and the verifier alike, by hand-built offers: {local date: [plain offers]}
     on one route, and no offers on any other route or day. Used for exact boundaries real fares rarely hit."""
     days = {day_number(date): tuple(build_output(offer, Offer) for offer in day) for date, day in offers.items()}
 
@@ -124,10 +124,11 @@ def hand_built(offers: dict[str, list[dict]], origin: str = "BOS", destination: 
 def offer(offer_id: str, fare: int, *, cabin: str = "ECONOMY", operator: str = "COMMERCIAL", depart: str = "2026-12-03 14:00",
           minutes: tuple = (400,), fees: tuple | None = None, origin: str = "BOS", destination: str = "LHR",
           carrier: str = "British Airways") -> dict:
-    """A plain hand-built offer: nonstop, or through a hub when ``minutes`` has two values."""
+    """A plain hand-built offer: nonstop, or through a hub when ``minutes`` has two values, leaving at ``depart``,
+    local time at the origin (its segments' times are UTC, as the world's are)."""
     fees = fees or tuple(0 for _ in minutes)
     points = [origin, *["DUB"] * (len(minutes) - 1), destination]
-    start = day_number(depart[:10]) * 1440 + int(depart[11:13]) * 60 + int(depart[14:16])
+    start = minute_number(depart) - world.utc_offset(origin)
     segments = []
     for index, (air, fee) in enumerate(zip(minutes, fees, strict=True)):
         segments.append({
@@ -138,4 +139,4 @@ def offer(offer_id: str, fare: int, *, cabin: str = "ECONOMY", operator: str = "
         })
         start += air + 90
     return {"offer_id": offer_id, "carrier": carrier, "operator": operator, "cabin": cabin, "fare_cents": fare,
-            "total_air_minutes": sum(minutes), "segments": segments}
+            "total_air_minutes": sum(minutes), "depart_date": depart[:10], "depart_local": depart, "segments": segments}

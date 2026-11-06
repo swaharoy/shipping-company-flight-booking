@@ -207,14 +207,42 @@ def test_an_offer_on_another_route_is_refused(tmp_path: Path) -> None:
 DAY = "2026-12-03"
 
 
-def boundary(tmp_path: Path, offers: list[dict], value, offer_id: str, *, oop: int = 0, day: str = DAY) -> dict:
+def boundary(tmp_path: Path, offers: list[dict], value, offer_id: str, *, oop: int = 0, day: str = DAY,
+             search: tuple[str, str] | None = None) -> dict:
+    """The verdict on booking ``offer_id`` from hand-built offers, after the trip's search (or ``search``'s days)."""
     by_day: dict[str, list[dict]] = {}
     for one in offers:
-        by_day.setdefault(one["segments"][0]["depart"][:10], []).append(one)
+        by_day.setdefault(one["depart_date"], []).append(one)
     route = value.origin.value, value.destination.value
     with hand_built(by_day, *route):
-        run = Run(value, tmp_path)
+        run = Run(value, tmp_path, search=search is None)
+        if search is not None:
+            run.search(*search)
         return run.judge(booking(run.run_id, offer_id, oop=oop))
+
+
+def test_the_window_uses_the_local_date_at_the_origin_not_the_utc_date(tmp_path: Path) -> None:
+    """San Francisco is UTC-8: 19:00 local on 2026-12-03 is 03:00 UTC on 2026-12-04, and 19:00 local the day
+    before is 03:00 UTC on 2026-12-03, the trip's date."""
+    value = request(origin="SFO", destination="JFK")  # fixed 2026-12-03
+    on_date = offer("20261203-01", 40_000, depart="2026-12-03 19:00", origin="SFO", destination="JFK")
+    day_before = offer("20261202-01", 30_000, depart="2026-12-02 19:00", origin="SFO", destination="JFK")
+    assert on_date["segments"][0]["depart"] == "2026-12-04 03:00"
+    assert day_before["segments"][0]["depart"] == "2026-12-03 03:00"
+    offers = [day_before, on_date]
+    assert valid(boundary(tmp_path / "a", offers, value, "20261203-01", search=("2026-12-02", "2026-12-03")))
+    verdict = boundary(tmp_path / "b", offers, value, "20261202-01", search=("2026-12-02", "2026-12-03"))
+    assert refused(verdict, "dates") and "departs 2026-12-02" in verdict["message"]
+
+
+def test_seven_days_ahead_counts_by_the_local_date_at_the_origin(tmp_path: Path) -> None:
+    """Booked 2026-11-05: an SFO flight at 19:00 local on 2026-11-11 (UTC 2026-11-12) is 6 days ahead."""
+    value = request(origin="SFO", destination="JFK", date_from="2026-11-10", date_to="2026-11-14")
+    offers = [offer("20261111-01", 30_000, depart="2026-11-11 19:00", origin="SFO", destination="JFK"),
+              offer("20261112-01", 45_000, depart="2026-11-12 06:00", origin="SFO", destination="JFK")]
+    assert offers[0]["segments"][0]["depart"] == "2026-11-12 03:00"
+    assert refused(boundary(tmp_path / "a", offers, value, "20261111-01"), "dates")
+    assert valid(boundary(tmp_path / "b", offers, value, "20261112-01"))
 
 
 def test_business_at_exactly_360_minutes_is_refused_and_361_is_booked(tmp_path: Path) -> None:
