@@ -1,39 +1,112 @@
 {
- "note": "Books the fare exactly $100.00 above the lowest: allowed.",
+ "note": "A fare exactly $100.00 above the lowest: within the band.",
  "kind": "boundary",
  "task": "shipping-company-flight-booking",
- "seed": 10,
- "scenario": "domestic-economy",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 10
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 10,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F07",
+    "offer_id": "20261203-02",
     "traveller_out_of_pocket_cents": 0
    }
   }
  ],
+ "world": {
+  "route": [
+   "BOS",
+   "LHR"
+  ],
+  "offers": {
+   "2026-12-03": [
+    {
+     "offer_id": "20261203-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 50000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    },
+    {
+     "offer_id": "20261203-02",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 60000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    },
+    {
+     "offer_id": "20261203-03",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 60001,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ]
+  }
+ },
  "expect": {
   "valid": true,
   "score": 1.0,

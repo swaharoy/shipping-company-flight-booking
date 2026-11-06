@@ -1,35 +1,41 @@
 {
- "note": "The correct booking for a flexible-later-possible trip.",
+ "note": "A flexible window from 4 to 11 days ahead: only days 7+ ahead count.",
  "kind": "gold",
  "task": "shipping-company-flight-booking",
- "seed": 205,
- "scenario": "flexible-later-possible",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "ORD",
+  "destination": "DEN",
+  "date_from": "2026-11-09",
+  "date_to": "2026-11-16",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 205
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 205,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F19",
+    "offer_id": "20261112-01",
     "traveller_out_of_pocket_cents": 0
    }
   }

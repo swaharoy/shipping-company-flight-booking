@@ -3,9 +3,19 @@
 from __future__ import annotations
 
 import pytest
+from helpers import request
 
 from contract import Airport, Cabin, DateMode, Offer, Operator, Refusal, Segment, TravellerType, Trip
-from plugin.rules import date_of, day_number, minute_number, out_of_pocket, solve
+from plugin.rules import (
+    booking_date_problem,
+    date_mode,
+    date_of,
+    day_number,
+    minute_number,
+    out_of_pocket,
+    request_problem,
+    solve,
+)
 
 AIRPORTS = {
     "JFK": Airport("JFK", "John F Kennedy", "New York", "US", "NA"),
@@ -17,7 +27,7 @@ AIRPORTS = {
 
 def trip(origin="JFK", destination="LAX", *, kind=TravellerType.EMPLOYEE, mode=DateMode.FIXED, booking="2027-03-01",
          start="2027-03-20", end=None, business=False, bag=False) -> Trip:
-    return Trip(1, "Test Traveller", kind, AIRPORTS[origin], AIRPORTS[destination], booking, mode, start,
+    return Trip("Test Traveller", kind, AIRPORTS[origin], AIRPORTS[destination], booking, mode, start,
                 end or start, business, bag)
 
 
@@ -27,7 +37,7 @@ def offer(offer_id, fare, *, cabin=Cabin.ECONOMY, operator=Operator.COMMERCIAL, 
     stops = ["HUB"] * (len(minutes) - 1)
     points = [origin, *stops, destination]
     segments = [
-        Segment(points[i], points[i + 1], f"{day} 10:00", f"{day} 15:00", air, fee)
+        Segment(points[i], points[i + 1], f"TA {i + 1}", f"{day} 10:00", f"{day} 15:00", air, fee)
         for i, (air, fee) in enumerate(zip(minutes, fees, strict=True))
     ]
     return Offer(offer_id, "Test Air", operator, cabin, fare, sum(minutes), segments)
@@ -133,3 +143,32 @@ def test_a_fixed_date_is_kept_even_under_7_days() -> None:
     t = trip(booking="2027-03-01", start="2027-03-03")
     offers = [offer("A", 10_000, day="2027-03-03"), offer("LATER", 1_000, day="2027-03-10")]
     assert solve(t, offers).correct == ["A"]
+
+
+def test_a_request_is_checked_without_a_clock() -> None:
+    assert request_problem(request()) is None
+    assert request_problem(request(date_to="2026-12-17")) is None  # 14 days later
+    for changes, words in (
+        ({"traveller_name": "  "}, "blank"),
+        ({"traveller_name": "x" * 81}, "longer"),
+        ({"destination": "BOS"}, "both BOS"),
+        ({"date_from": "2026-02-30"}, "not a real"),
+        ({"date_to": "2026-12-02"}, "before date_from"),
+        ({"date_to": "2026-12-18"}, "at most 14"),
+    ):
+        assert words in request_problem(request(**changes)), changes
+
+
+@pytest.mark.parametrize(("date_from", "date_to", "ok"), [
+    ("2026-11-05", "2026-11-05", True),  # today
+    ("2026-11-04", "2026-11-05", False),  # yesterday
+    ("2027-10-01", "2027-10-01", True),  # exactly 330 days ahead
+    ("2027-09-30", "2027-10-02", False),  # 331 days ahead
+])
+def test_departures_run_from_today_to_330_days_ahead(date_from, date_to, ok) -> None:
+    assert (booking_date_problem(date_from, date_to, "2026-11-05") is None) is ok
+
+
+def test_one_day_is_fixed_and_a_range_is_flexible() -> None:
+    assert date_mode("2026-12-03", "2026-12-03") is DateMode.FIXED
+    assert date_mode("2026-12-03", "2026-12-04") is DateMode.FLEXIBLE

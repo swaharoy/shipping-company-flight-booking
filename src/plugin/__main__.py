@@ -13,13 +13,14 @@ from mcp.server.stdio import stdio_server
 from slimconfig import build_output, output_schema, plain_output
 
 from contract import TOOLS, Tool
-from plugin import get_trip, search_flights, solve_booking
+from plugin import booking_requirements, get_trip, search_flights, solve_booking
 
 server = Server("shipping-company-flight-booking")
 # NanoAgent names the one folder this plugin may write to.
 WORKSPACE_ENV = "NANOAGENT_WORKSPACE"
 # Each tool's implementation: (its input, the workspace) -> its output, as contract.TOOLS types them.
 IMPLEMENTATIONS = {
+    Tool.BOOKING_REQUIREMENTS: booking_requirements,
     Tool.GET_TRIP: get_trip,
     Tool.SEARCH_FLIGHTS: search_flights,
     Tool.SOLVE_BOOKING: solve_booking,

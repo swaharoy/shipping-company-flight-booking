@@ -1,0 +1,35 @@
+{
+ "note": "A request from an airport to itself is refused.",
+ "kind": "malformed",
+ "task": "shipping-company-flight-booking",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "BOS",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
+ "steps": [
+  {
+   "tool": "get_trip",
+   "arguments": "$request",
+   "save_as": "trip"
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": false,
+    "refusal": "NO_COMPLIANT_FLIGHT",
+    "offer_id": "",
+    "traveller_out_of_pocket_cents": 0
+   }
+  }
+ ],
+ "expect": {
+  "error_contains": "both BOS"
+ }
+}

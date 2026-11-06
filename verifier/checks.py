@@ -4,10 +4,7 @@ import json
 import re
 from pathlib import Path
 
-from .rules import is_date
-
 RUN_ID = re.compile(r"^[0-9a-f]{12}$")
-SEED_RANGE = (0, 9999)
 
 
 def result(valid, message, *, score=None, **details):
@@ -29,19 +26,6 @@ def check(check_id, constraint, ok, expected="", actual="", message=""):
         "actual": actual,
         "message": message,
     }
-
-
-def seed_problem(seed):
-    low, high = SEED_RANGE
-    if not low <= seed <= high:
-        return f"seed must be between {low} and {high}, not {seed}"
-    return None
-
-
-def date_problem(name, value):
-    if not is_date(value):
-        return f"{name} {value!r} is not a real YYYY-MM-DD date"
-    return None
 
 
 def read_json(path):

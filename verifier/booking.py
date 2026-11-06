@@ -1,6 +1,9 @@
 """The shipping-company-flight-booking verdict: named checks, in order, on the answer key, the run the
 submission names, its search receipts, and the booking against rules R1-R8.
 
+Every search receipt is checked against the simulated world rebuilt here (verifier/world.py, the tools' own
+file), so any offer the agent saw, on any day it searched, is known exactly.
+
 The first five checks are integrity gates; the rest are the policy. The verdict is valid, scoring 1, only
 when every check holds; any failure, gate or policy, scores 0: a booking follows the policy or it does not. A check
 that depends on a failed one is "not checked". Expected values come from the verifier's own copy of the
@@ -21,19 +24,20 @@ from .rules import (
     in_window,
     is_international,
     is_transatlantic,
-    matches_search,
     offers_digest,
     out_of_pocket,
+    request_plain,
     solve,
 )
 from .solve import answer_key_problem
+from .world import offers_between
 
 TEXT = {
-    "answer-key": "The answer key pinned this seed's trip and offers, and its booking follows the rules",
-    "this-run": "The submission names a run get_trip began for this seed after the answer key",
+    "answer-key": "The answer key pinned this request's trip, booked today, its offers, and a booking that follows the rules",
+    "this-run": "The submission names a run get_trip began for this request on the same booking date, after the answer key",
     "searched": "The agent searched for flights in this run",
-    "receipts-match": "Every search in this run returned exactly the pinned offers for its query",
-    "offer-seen": "The booked offer was among this run's search results",
+    "receipts-match": "Every search in this run returned exactly the route's offers for its query",
+    "offer-seen": "The booked offer was among this run's search results, on the trip's route",
     "refusal": "R1/R8: book unless the traveller is a consultant or no offer is allowed, with the right reason",
     "commercial": "R3: a commercial airline, never a charter",
     "dates": "R4: departs in the trip's window, at least 7 days ahead when a flexible window allows it",
@@ -76,24 +80,26 @@ class Verdict:
 
 def verify_task(arguments, output, reference, workspace):
     verdict = Verdict()
-    seed = arguments.seed
     # Gate 1: the answer key.
-    problem = "no answer key was pinned" if reference is None else answer_key_problem(seed, reference)
-    verdict.add("answer-key", problem is None, f"seed {seed}", "" if reference is None else f"seed {reference.trip.seed}",
-                problem or "the answer key is this seed's and follows the rules")
+    problem = "no answer key was pinned" if reference is None else answer_key_problem(arguments, reference)
+    route = f"{arguments.origin.value}-{arguments.destination.value} {arguments.date_from} to {arguments.date_to}"
+    verdict.add("answer-key", problem is None, f"the key of {route}", "none" if reference is None else
+                f"booked {reference.trip.booking_date}", problem or "the answer key is this request's and follows the rules")
     if problem is not None:
         for check_id in GATES[1:] + POLICY:
             verdict.add(check_id, None)
         return verdict.finish()
     trip, offers = reference.trip, reference.offers
-    by_id = {offer.offer_id: offer for offer in offers}
     answer = solve(trip, offers)
 
     # Gate 2: this run.
     started, searches = run_files(workspace, output.run_id)
-    if started is None or started.get("seed") != seed:
-        verdict.add("this-run", False, f"a run of seed {seed}", output.run_id,
-                    f"the workspace holds no run {output.run_id!r} begun by get_trip for seed {seed}")
+    if not isinstance(started, dict) or started.get("request") != request_plain(arguments):
+        verdict.add("this-run", False, "a run of this request", output.run_id,
+                    f"the workspace holds no run {output.run_id!r} begun by get_trip for this request")
+    elif started.get("booking_date") != trip.booking_date:
+        verdict.add("this-run", False, f"booked {trip.booking_date}", str(started.get("booking_date")),
+                    f"run {output.run_id} was booked on another day than the answer key")
     elif not isinstance(started.get("started_at"), str) or started["started_at"] < reference.pinned_at:
         verdict.add("this-run", False, f"begun after {reference.pinned_at}", str(started.get("started_at")),
                     f"run {output.run_id} began before this task's answer key: it is an earlier run")
@@ -109,35 +115,37 @@ def verify_task(arguments, output, reference, workspace):
         verdict.add("searched", True, actual=f"{len(searches)} searches", message="searched" if searches else
                     "a consultant refusal needs no search")
 
-    # Gate 4: every search receipt matches the pinned offers.
-    seen = set()
+    # Gate 4: every search receipt matches the simulated world's offers for its query.
+    seen = {}
     mismatch = None
     for number, receipt in enumerate(searches, start=1):
-        if not isinstance(receipt, dict) or receipt.get("seed") != seed:
-            mismatch = f"search {number}'s receipt is unreadable or for another seed"
+        if not isinstance(receipt, dict):
+            mismatch = f"search {number}'s receipt is unreadable"
             break
         try:
-            expected = [
-                offer for offer in offers
-                if matches_search(offer, receipt["origin"], receipt["destination"], receipt["date_from"],
-                                  receipt["date_to"])
-            ]
+            expected = offers_between(receipt["origin"], receipt["destination"], receipt["date_from"],
+                                      receipt["date_to"])
         except (KeyError, TypeError, ValueError):
             mismatch = f"search {number}'s receipt is malformed"
             break
         if receipt.get("offer_ids") != [o.offer_id for o in expected] or receipt.get("digest") != offers_digest(expected):
-            mismatch = f"search {number} returned offers other than the pinned ones for its query"
+            mismatch = f"search {number} returned offers other than the route's offers for its query"
             break
-        seen.update(receipt["offer_ids"])
-    verdict.add("receipts-match", mismatch is None, "receipts equal to the pinned offers", mismatch or "equal",
-                mismatch or f"{len(searches)} search receipts match the answer key")
+        seen.update({o.offer_id: o for o in expected})
+    verdict.add("receipts-match", mismatch is None, "receipts equal to the route's offers", mismatch or "equal",
+                mismatch or f"{len(searches)} search receipts match the simulated offers")
 
-    # Gate 5: the booked offer was seen.
-    if output.booked:
-        ok = output.offer_id in seen and output.offer_id in by_id
-        verdict.add("offer-seen", ok, "an offer id from this run's search results", output.offer_id,
-                    f"offer {output.offer_id} was in the search results" if ok else
+    # Gate 5: the booked offer was seen, on the trip's route.
+    route = f"{trip.origin.code}-{trip.destination.code}"
+    if output.booked and output.offer_id not in seen:
+        verdict.add("offer-seen", False, "an offer id from this run's search results", output.offer_id,
                     f"offer {output.offer_id!r} was not among this run's search results")
+    elif output.booked:
+        flown = seen[output.offer_id]
+        flies = f"{flown.segments[0].origin}-{flown.segments[-1].destination}"
+        verdict.add("offer-seen", flies == route, f"an offer on {route}", f"{output.offer_id} on {flies}",
+                    f"offer {output.offer_id} was in the search results" if flies == route else
+                    f"offer {output.offer_id} flies {flies}, not the trip's route {route}")
     else:
         verdict.add("offer-seen", True, message="nothing booked")
 
@@ -167,7 +175,7 @@ def verify_task(arguments, output, reference, workspace):
                 verdict.add(check_id, None)
         return verdict.finish()
 
-    offer = by_id[output.offer_id]
+    offer = seen[output.offer_id]
     oid = offer.offer_id
     # R3
     verdict.add("commercial", offer.operator is Operator.COMMERCIAL, "COMMERCIAL", offer.operator.value,
@@ -220,7 +228,7 @@ def refusal_reason(trip, want):
         return "the traveller is a consultant: their travel is not billed to the company, so never book it"
     if want is Refusal.NO_COMPLIANT_FLIGHT:
         return "no commercial flight in the trip's dates has an allowed cabin"
-    return f"a {trip.traveller_type.value} with at least one allowed flight: book it"
+    return f"the traveller ({trip.traveller_type.value}) has at least one allowed flight: book it"
 
 
 def business_reason(trip, offer):

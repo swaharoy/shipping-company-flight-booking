@@ -1,6 +1,6 @@
 """The shipping company's air-travel rules, shared byte for byte by the tools (src/plugin/rules.py) and the
-verifier (verifier/rules.py): dates, which offers the policy allows, the booking it requires, and the
-canonical form of offers both sides hash.
+verifier (verifier/rules.py): dates, what a trip request may be, which offers the policy allows, the booking
+it requires, and the canonical form of requests and offers both sides compare.
 
 Exact integer arithmetic only, and no datetime (a verifier may not import it): a date is a day number.
 It imports only modules a verifier may use, and contract.
@@ -20,7 +20,9 @@ BUSINESS_AIR_MINUTES = 360  # business needs strictly more minutes in the air on
 FARE_MARGIN_CENTS = 10_000  # the fare may be at most $100 above the lowest allowed fare
 BAG_CAP_CENTS = 3_000  # one checked bag is reimbursed up to $30 per segment
 HOME_COUNTRY = "US"
-SEARCH_MAX_DAYS = 14  # one search covers at most this many days after date_from
+SEARCH_MAX_DAYS = 14  # a trip's dates, and one search, cover at most this many days after date_from
+BOOKING_HORIZON_DAYS = 330  # flights are sold up to this many days after today
+NAME_MOST_CHARS = 80
 
 
 def day_number(date):
@@ -78,6 +80,69 @@ def minute_number(time):
     return day_number(date) * 1440 + hour * 60 + minute
 
 
+def request_problem(request):
+    """What is wrong with a trip request on its own (no clock needed), or None."""
+    if not request.traveller_name.strip():
+        return "traveller_name is blank: give the traveller's name"
+    if len(request.traveller_name) > NAME_MOST_CHARS:
+        return f"traveller_name is longer than {NAME_MOST_CHARS} characters"
+    if request.origin is request.destination:
+        return f"origin and destination are both {request.origin.value}: give two different airports"
+    for name, value in (("date_from", request.date_from), ("date_to", request.date_to)):
+        if not is_date(value):
+            return f"{name} {value!r} is not a real YYYY-MM-DD date"
+    span = day_number(request.date_to) - day_number(request.date_from)
+    if span < 0:
+        return f"date_to {request.date_to} is before date_from {request.date_from}"
+    if span > SEARCH_MAX_DAYS:
+        return f"date_to is {span} days after date_from: a flexible range covers at most {SEARCH_MAX_DAYS} days"
+    return None
+
+
+def booking_date_problem(date_from, date_to, booking_date):
+    """What is wrong with departure days booked on ``booking_date`` (today), or None."""
+    if day_number(date_from) < day_number(booking_date):
+        return f"date_from {date_from} is before today, {booking_date}: flights cannot leave in the past"
+    if day_number(date_to) > day_number(booking_date) + BOOKING_HORIZON_DAYS:
+        return (f"date_to {date_to} is more than {BOOKING_HORIZON_DAYS} days after today, {booking_date}: "
+                "flights are not sold that far ahead")
+    return None
+
+
+def date_mode(date_from, date_to):
+    """One day is a FIXED date; a range is FLEXIBLE."""
+    return DateMode.FIXED if date_from == date_to else DateMode.FLEXIBLE
+
+
+def request_plain(request):
+    """A trip request as plain JSON values, the form receipts record and the verifier compares."""
+    return {
+        "traveller_name": request.traveller_name,
+        "traveller_type": request.traveller_type.value,
+        "origin": request.origin.value,
+        "destination": request.destination.value,
+        "date_from": request.date_from,
+        "date_to": request.date_to,
+        "wants_business": request.wants_business,
+        "wants_checked_bag": request.wants_checked_bag,
+    }
+
+
+def trip_matches_request(trip, request):
+    """Whether a trip states exactly what the request asked for."""
+    return (
+        trip.traveller_name == request.traveller_name
+        and trip.traveller_type is request.traveller_type
+        and trip.origin.code == request.origin.value
+        and trip.destination.code == request.destination.value
+        and trip.date_from == request.date_from
+        and trip.date_to == request.date_to
+        and trip.date_mode is date_mode(request.date_from, request.date_to)
+        and trip.wants_business is request.wants_business
+        and trip.wants_checked_bag is request.wants_checked_bag
+    )
+
+
 def departure_date(offer):
     """The day an offer departs: the date of its first segment's departure."""
     return offer.segments[0].depart[:10]
@@ -124,16 +189,6 @@ def out_of_pocket(trip, offer):
     if not trip.wants_checked_bag:
         return 0
     return sum(max(0, segment.bag_fee_cents - BAG_CAP_CENTS) for segment in offer.segments)
-
-
-def matches_search(offer, origin, destination, date_from, date_to):
-    """Whether search_flights(origin, destination, date_from, date_to) returns this offer."""
-    day = day_number(departure_date(offer))
-    return (
-        offer.segments[0].origin == origin
-        and offer.segments[-1].destination == destination
-        and day_number(date_from) <= day <= day_number(date_to)
-    )
 
 
 @dataclass
@@ -192,6 +247,7 @@ def offer_plain(offer):
             {
                 "origin": segment.origin,
                 "destination": segment.destination,
+                "flight_number": segment.flight_number,
                 "depart": segment.depart,
                 "arrive": segment.arrive,
                 "air_minutes": segment.air_minutes,
@@ -206,3 +262,8 @@ def offers_digest(offers):
     """The SHA-256 of a list of offers in their canonical JSON form."""
     text = json.dumps([offer_plain(offer) for offer in offers], sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def same_offers(left, right):
+    """Whether two lists of offers are the same offers, in the same order."""
+    return [offer_plain(offer) for offer in left] == [offer_plain(offer) for offer in right]

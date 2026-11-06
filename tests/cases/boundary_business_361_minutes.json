@@ -1,39 +1,102 @@
 {
- "note": "Business on a connection flying 361 min: allowed and required.",
+ "note": "A connection flying 361 min in all: business is due.",
  "kind": "boundary",
  "task": "shipping-company-flight-booking",
- "seed": 3,
- "scenario": "exactly-360-minutes",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "JFK",
+  "destination": "BOG",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": true,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 3
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 3,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F06",
+    "offer_id": "20261203-02",
     "traveller_out_of_pocket_cents": 0
    }
   }
  ],
+ "world": {
+  "route": [
+   "JFK",
+   "BOG"
+  ],
+  "offers": {
+   "2026-12-03": [
+    {
+     "offer_id": "20261203-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 40000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "JFK",
+       "destination": "BOG",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    },
+    {
+     "offer_id": "20261203-02",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "BUSINESS",
+     "fare_cents": 150000,
+     "total_air_minutes": 361,
+     "segments": [
+      {
+       "origin": "JFK",
+       "destination": "DUB",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 17:20",
+       "air_minutes": 200,
+       "bag_fee_cents": 0
+      },
+      {
+       "origin": "DUB",
+       "destination": "BOG",
+       "flight_number": "BA 101",
+       "depart": "2026-12-03 18:50",
+       "arrive": "2026-12-03 21:31",
+       "air_minutes": 161,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ]
+  }
+ },
  "expect": {
   "valid": true,
   "score": 1.0,

@@ -1,31 +1,46 @@
 {
- "note": "Searches a 20-day span.",
+ "note": "A search over more than 14 days is refused.",
  "kind": "malformed",
  "task": "shipping-company-flight-booking",
- "seed": 0,
- "scenario": "domestic-economy",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 0
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 0,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
-    "date_from": "2027-03-13",
-    "date_to": "2027-04-02"
-   },
-   "save_as": "search"
+    "date_from": "$ref:trip.trip.date_from",
+    "date_to": "2026-12-18"
+   }
+  },
+  {
+   "submit": {
+    "run_id": "$ref:trip.run_id",
+    "booked": true,
+    "refusal": "NONE",
+    "offer_id": "20261203-01",
+    "traveller_out_of_pocket_cents": 0
+   }
   }
  ],
  "expect": {
-  "error_contains": "days after date_from"
+  "error_contains": "date_to must be 0 to 14"
  }
 }

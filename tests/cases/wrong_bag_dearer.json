@@ -1,36 +1,42 @@
 {
- "note": "Books a fare $100.01 above the lowest.",
+ "note": "A fare within $100 whose bag costs the traveller more than another's.",
  "kind": "wrong",
  "task": "shipping-company-flight-booking",
- "seed": 10,
- "scenario": "domestic-economy",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "JFK",
+  "destination": "ORD",
+  "date_from": "2026-12-05",
+  "date_to": "2026-12-05",
+  "wants_business": false,
+  "wants_checked_bag": true
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 10
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 10,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F04",
-    "traveller_out_of_pocket_cents": 0
+    "offer_id": "20261205-03",
+    "traveller_out_of_pocket_cents": 1500
    }
   }
  ],
@@ -38,7 +44,7 @@
   "valid": false,
   "score": 0.0,
   "failed": [
-   "fare"
+   "bag"
   ]
  }
 }

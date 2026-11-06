@@ -1,4 +1,5 @@
-"""The real MCP server over stdio: it lists the three tools and answers get_trip and search_flights."""
+"""The real MCP server over stdio: it lists the four tools and answers booking_requirements, get_trip and
+search_flights."""
 
 from __future__ import annotations
 
@@ -18,21 +19,29 @@ def test_the_server_serves_the_tools(tmp_path: Path) -> None:
     environment = dict(os.environ, NANOAGENT_WORKSPACE=str(tmp_path), PYTHONPATH=str(ROOT / "src"))
     parameters = StdioServerParameters(command=sys.executable, args=["-m", "plugin"], env=environment, cwd=str(ROOT))
 
+    def payload(answer):
+        return answer.structuredContent or json.loads(answer.content[0].text)
+
     async def session() -> tuple:
         async with stdio_client(parameters) as (read, write), ClientSession(read, write) as client:
             await client.initialize()
             tools = sorted(tool.name for tool in (await client.list_tools()).tools)
-            started = await client.call_tool("get_trip", {"seed": 42})
-            trip = started.structuredContent or json.loads(started.content[0].text)
+            guide = payload(await client.call_tool("booking_requirements", {"topic": "FIELDS"}))
+            date_from = guide["fields"][4]["example"]
+            request = {"traveller_name": "Maya Chen", "traveller_type": "EMPLOYEE", "origin": "BOS",
+                       "destination": "LHR", "date_from": date_from, "date_to": date_from, "wants_business": False,
+                       "wants_checked_bag": True}
+            trip = payload(await client.call_tool("get_trip", request))
             found = await client.call_tool("search_flights", {
-                "seed": 42, "run_id": trip["run_id"], "origin": trip["trip"]["origin"]["code"],
-                "destination": trip["trip"]["destination"]["code"], "date_from": trip["trip"]["date_from"],
-                "date_to": trip["trip"]["date_to"]})
-            refused = await client.call_tool("get_trip", {"seed": 10_000})
-            return tools, trip, found, refused
+                "run_id": trip["run_id"], "origin": "BOS", "destination": "LHR", "date_from": date_from,
+                "date_to": date_from})
+            refused = await client.call_tool("get_trip", request | {"destination": "BOS"})
+            return tools, guide, trip, found, refused
 
-    tools, trip, found, refused = anyio.run(session)
-    assert tools == ["get_trip", "search_flights", "solve_booking"]
-    assert trip["trip"]["seed"] == 42 and (tmp_path / "runs" / trip["run_id"] / "trip.json").is_file()
+    tools, guide, trip, found, refused = anyio.run(session)
+    assert tools == ["booking_requirements", "get_trip", "search_flights", "solve_booking"]
+    assert [field["name"] for field in guide["fields"]][:2] == ["traveller_name", "traveller_type"]
+    assert trip["trip"]["origin"]["city"] == "Boston" and (tmp_path / "runs" / trip["run_id"] / "trip.json").is_file()
     assert not found.isError and (tmp_path / "runs" / trip["run_id"] / "search-1.json").is_file()
+    assert payload(found)["note"].startswith("Simulated")
     assert refused.isError

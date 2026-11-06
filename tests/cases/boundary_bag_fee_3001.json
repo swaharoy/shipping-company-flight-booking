@@ -1,39 +1,74 @@
 {
- "note": "A $30.01 bag fee: the traveller pays 1 cents.",
+ "note": "A $30.01 bag fee leaves the traveller one cent.",
  "kind": "boundary",
  "task": "shipping-company-flight-booking",
- "seed": 37,
- "scenario": "checked-bag-trade-off",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": true
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 37
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 37,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F08",
+    "offer_id": "20261203-01",
     "traveller_out_of_pocket_cents": 1
    }
   }
  ],
+ "world": {
+  "route": [
+   "BOS",
+   "LHR"
+  ],
+  "offers": {
+   "2026-12-03": [
+    {
+     "offer_id": "20261203-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 50000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 3001
+      }
+     ]
+    }
+   ]
+  }
+ },
  "expect": {
   "valid": true,
   "score": 1.0,

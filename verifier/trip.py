@@ -1,35 +1,33 @@
-"""get_trip's checks: the trip is the seed's, well formed, and its run was begun."""
+"""get_trip's checks: a request that can be booked, the trip it states, and the run it began."""
 
-from contract import DateMode
-
-from .checks import RUN_ID, date_problem, read_json, result, seed_problem
-from .rules import day_number
+from .checks import RUN_ID, read_json, result
+from .rules import booking_date_problem, is_date, request_plain, request_problem, trip_matches_request
+from .world import airport
 
 
 def verify_input(value):
-    problem = seed_problem(value.seed)
-    return result(problem is None, problem or "the seed is in range")
+    problem = request_problem(value)
+    return result(problem is None, problem or "a well-formed trip request")
 
 
 def verify_output(input_value, output_value, workspace):
     trip = output_value.trip
-    if trip.seed != input_value.seed:
-        return result(False, f"the trip is seed {trip.seed}'s, not seed {input_value.seed}'s")
-    for name in ("booking_date", "date_from", "date_to"):
-        problem = date_problem(name, date_field(trip, name))
-        if problem:
-            return result(False, problem)
-    if day_number(trip.date_to) < day_number(trip.date_from):
-        return result(False, "date_to is before date_from")
-    if trip.date_mode is DateMode.FIXED and trip.date_to != trip.date_from:
-        return result(False, "a FIXED trip departs on one day: date_to must equal date_from")
+    if not trip_matches_request(trip, input_value):
+        return result(False, "the trip is not the one the request asked for")
+    if trip.origin != airport(trip.origin.code) or trip.destination != airport(trip.destination.code):
+        return result(False, "the trip's airports are not the airport list's")
+    if not is_date(trip.booking_date):
+        return result(False, f"booking_date {trip.booking_date!r} is not a real YYYY-MM-DD date")
+    problem = booking_date_problem(trip.date_from, trip.date_to, trip.booking_date)
+    if problem:
+        return result(False, problem)
     if not RUN_ID.fullmatch(output_value.run_id):
         return result(False, f"run_id {output_value.run_id!r} is not a run id")
     receipt = read_json(f"{workspace}/runs/{output_value.run_id}/trip.json")
-    if receipt is None or receipt.get("seed") != trip.seed:
-        return result(False, f"run {output_value.run_id} has no receipt for seed {trip.seed} in the workspace")
-    return result(True, f"seed {trip.seed}'s trip, run {output_value.run_id}")
-
-
-def date_field(trip, name):
-    return {"booking_date": trip.booking_date, "date_from": trip.date_from, "date_to": trip.date_to}[name]
+    if (
+        receipt is None
+        or receipt.get("request") != request_plain(input_value)
+        or receipt.get("booking_date") != trip.booking_date
+    ):
+        return result(False, f"run {output_value.run_id} has no receipt for this request in the workspace")
+    return result(True, f"the trip of the request, booked {trip.booking_date}, run {output_value.run_id}")

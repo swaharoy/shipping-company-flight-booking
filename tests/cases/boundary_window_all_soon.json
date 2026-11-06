@@ -1,39 +1,95 @@
 {
- "note": "Every day of the flexible window is under 7 days ahead: any is fine.",
+ "note": "Every day of the window under 7 days ahead: the cheapest day is right.",
  "kind": "boundary",
  "task": "shipping-company-flight-booking",
- "seed": 6,
- "scenario": "flexible-all-soon",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-11-06",
+  "date_to": "2026-11-08",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 6
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 6,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F06",
+    "offer_id": "20261106-01",
     "traveller_out_of_pocket_cents": 0
    }
   }
  ],
+ "world": {
+  "route": [
+   "BOS",
+   "LHR"
+  ],
+  "offers": {
+   "2026-11-06": [
+    {
+     "offer_id": "20261106-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 30000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-11-06 14:00",
+       "arrive": "2026-11-06 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ],
+   "2026-11-08": [
+    {
+     "offer_id": "20261108-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 45000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-11-08 14:00",
+       "arrive": "2026-11-08 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ]
+  }
+ },
  "expect": {
   "valid": true,
   "score": 1.0,

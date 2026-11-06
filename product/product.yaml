@@ -1,11 +1,11 @@
 _ > nanoagent.plugin.v0001.ProductConfig:
 tagline: "Book flights the way a company travel policy says to"
-summary: "An agent books a one-way flight for a shipping company's traveller under an air-travel policy based on Pitney Bowes' public Travel and Expense Policy: commercial airlines only, coach unless business is allowed, the lowest fare within $100, and the traveller's checked-bag cost. A deterministic verifier checks every booking against the policy's rules."
+summary: "Describe a trip in plain words and an agent books a one-way flight for a shipping company's traveller, as of today, under an air-travel policy based on Pitney Bowes' public Travel and Expense Policy: commercial airlines only, coach unless business is allowed, the lowest fare within $100, and the traveller's checked-bag cost. Real airports and airline names; simulated fares and schedules. A deterministic verifier checks every booking against the policy's rules."
 highlights:
-  - "Every trip comes from a seed, so the same seed always gives the same trip, offers and verdict"
+  - "No codes to learn: say who travels, from where to where, and when; the plugin can list what it needs"
   - "The verdict lists each policy rule with what was expected and what was booked"
-  - "Real airports; consultants and trips without a compliant flight are refused, not booked"
+  - "Real airports and airlines on plausible routes, with simulated fares, so the same request on the same day always gets the same offers and verdict"
 steps:
-  - "Ask to see a trip by its seed, for example seed 42"
-  - "Ask the agent to book that trip"
+  - "Ask what information is needed to book a flight"
+  - "Describe your trip: traveller, airports, dates, and whether business class or a checked bag is wanted"
   - "Read the booking and the verifier's checks on the result card"

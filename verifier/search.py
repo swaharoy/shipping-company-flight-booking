@@ -1,15 +1,16 @@
-"""search_flights' checks: a well-formed query, and only offers that match it, in departure order."""
+"""search_flights' checks: a well-formed query, and exactly the simulated world's offers for it."""
 
-from .checks import RUN_ID, date_problem, result, seed_problem
-from .rules import SEARCH_MAX_DAYS, day_number, matches_search, minute_number
+from .checks import RUN_ID, result
+from .rules import SEARCH_MAX_DAYS, day_number, is_date, same_offers
+from .world import NOTE, offers_between
 
 
 def verify_input(value):
-    problem = seed_problem(value.seed)
+    if value.origin is value.destination:
+        return result(False, f"origin and destination are both {value.origin.value}")
     for name, date in (("date_from", value.date_from), ("date_to", value.date_to)):
-        problem = problem or date_problem(name, date)
-    if problem:
-        return result(False, problem)
+        if not is_date(date):
+            return result(False, f"{name} {date!r} is not a real YYYY-MM-DD date")
     span = day_number(value.date_to) - day_number(value.date_from)
     if not 0 <= span <= SEARCH_MAX_DAYS:
         return result(False, f"date_to must be 0 to {SEARCH_MAX_DAYS} days after date_from")
@@ -19,22 +20,12 @@ def verify_input(value):
 
 
 def verify_output(input_value, output_value, workspace):
-    if output_value.run_id != input_value.run_id:
-        return result(False, "the result names another run")
-    ids = [offer.offer_id for offer in output_value.offers]
-    if len(set(ids)) != len(ids):
-        return result(False, "an offer is listed twice")
     q = input_value
-    previous = None
-    for offer in output_value.offers:
-        if not offer.segments:
-            return result(False, f"offer {offer.offer_id} has no segments")
-        if not matches_search(offer, q.origin, q.destination, q.date_from, q.date_to):
-            return result(False, f"offer {offer.offer_id} does not match the search")
-        if offer.total_air_minutes != sum(segment.air_minutes for segment in offer.segments):
-            return result(False, f"offer {offer.offer_id}'s total_air_minutes is not its segments' sum")
-        depart = minute_number(offer.segments[0].depart)
-        if previous is not None and depart < previous:
-            return result(False, "offers are not in departure order")
-        previous = depart
-    return result(True, f"{len(ids)} offers match the search")
+    if output_value.run_id != q.run_id:
+        return result(False, "the result names another run")
+    if output_value.note != NOTE:
+        return result(False, "the result does not say its fares and schedules are simulated")
+    expected = offers_between(q.origin.value, q.destination.value, q.date_from, q.date_to)
+    if not same_offers(output_value.offers, expected):
+        return result(False, "the offers are not the route's offers on the searched days")
+    return result(True, f"{len(expected)} offers on {q.origin.value}-{q.destination.value}, {q.date_from} to {q.date_to}")

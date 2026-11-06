@@ -2,9 +2,10 @@
 
 from contract import Task, Tool
 
-from . import booking, search, solve, trip
+from . import booking, requirements, search, solve, trip
 
 TOOLS = {
+    Tool.BOOKING_REQUIREMENTS: requirements,
     Tool.GET_TRIP: trip,
     Tool.SEARCH_FLIGHTS: search,
     Tool.SOLVE_BOOKING: solve,
@@ -18,7 +19,7 @@ def _tool_output(module):
 
 # task -> its output's check, verify_task(arguments, output, reference, workspace)
 TASKS = {
-    Task.SHOW_TRIP: _tool_output(trip),
+    Task.BOOKING_REQUIREMENTS: _tool_output(requirements),
     Task.SEARCH_FLIGHTS: _tool_output(search),
     Task.BOOK_FLIGHT: booking.verify_task,
 }

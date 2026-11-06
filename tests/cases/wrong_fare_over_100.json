@@ -1,42 +1,50 @@
 {
- "note": "The correct booking for a short-transatlantic trip.",
- "kind": "gold",
+ "note": "An allowed fare more than $100 above the lowest.",
+ "kind": "wrong",
  "task": "shipping-company-flight-booking",
- "seed": 202,
- "scenario": "short-transatlantic",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-05",
+  "date_to": "2026-12-05",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 202
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 202,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F06",
+    "offer_id": "20261205-04",
     "traveller_out_of_pocket_cents": 0
    }
   }
  ],
  "expect": {
-  "valid": true,
-  "score": 1.0,
-  "failed": []
+  "valid": false,
+  "score": 0.0,
+  "failed": [
+   "fare"
+  ]
  }
 }

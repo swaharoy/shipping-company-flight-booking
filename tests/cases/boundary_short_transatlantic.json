@@ -1,39 +1,93 @@
 {
- "note": "Business across the Atlantic in 316 min: allowed at any length.",
+ "note": "Transatlantic business under 6 h: allowed, so due.",
  "kind": "boundary",
  "task": "shipping-company-flight-booking",
- "seed": 2,
- "scenario": "short-transatlantic",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": true,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 2
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 2,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F06",
+    "offer_id": "20261203-02",
     "traveller_out_of_pocket_cents": 0
    }
   }
  ],
+ "world": {
+  "route": [
+   "BOS",
+   "LHR"
+  ],
+  "offers": {
+   "2026-12-03": [
+    {
+     "offer_id": "20261203-01",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "ECONOMY",
+     "fare_cents": 40000,
+     "total_air_minutes": 400,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 20:40",
+       "air_minutes": 400,
+       "bag_fee_cents": 0
+      }
+     ]
+    },
+    {
+     "offer_id": "20261203-02",
+     "carrier": "British Airways",
+     "operator": "COMMERCIAL",
+     "cabin": "BUSINESS",
+     "fare_cents": 150000,
+     "total_air_minutes": 340,
+     "segments": [
+      {
+       "origin": "BOS",
+       "destination": "LHR",
+       "flight_number": "BA 100",
+       "depart": "2026-12-03 14:00",
+       "arrive": "2026-12-03 19:40",
+       "air_minutes": 340,
+       "bag_fee_cents": 0
+      }
+     ]
+    }
+   ]
+  }
+ },
  "expect": {
   "valid": true,
   "score": 1.0,

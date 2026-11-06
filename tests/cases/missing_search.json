@@ -1,15 +1,22 @@
 {
- "note": "Books the right offer id without ever searching.",
+ "note": "Booked without searching.",
  "kind": "missing",
  "task": "shipping-company-flight-booking",
- "seed": 0,
- "scenario": "domestic-economy",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 0
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
@@ -17,7 +24,7 @@
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F10",
+    "offer_id": "20261203-01",
     "traveller_out_of_pocket_cents": 0
    }
   }

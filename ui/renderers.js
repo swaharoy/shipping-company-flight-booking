@@ -1,10 +1,8 @@
-// How this plugin's page draws its tasks' outputs: the trip as a card of facts, the flight offers as a
-// table, and a booking as the chosen offer or the reason nothing was booked.
-import { dataTable, h, plural, statusPill } from "./kit/components.js";
+// How this plugin's page draws its tasks' outputs: what to tell us to book (fields, date rules, airports),
+// the flight offers as a table, and a booking as the chosen offer or the reason nothing was booked.
+import { dataTable, disclosure, h, plural, statusPill } from "./kit/components.js";
 
 const money = (cents) => `$${(cents / 100).toFixed(2)}`;
-const yesNo = (value) => (value ? "Yes" : "No");
-const place = (airport) => `${airport.code} · ${airport.city}, ${airport.country} (${airport.continent})`;
 
 function facts(rows) {
   return h(
@@ -14,24 +12,46 @@ function facts(rows) {
   );
 }
 
-function tripCard(run_id, trip) {
-  const dates = trip.date_mode === "FIXED" ? trip.date_from : `${trip.date_from} to ${trip.date_to} (flexible)`;
-  return h(
-    "div",
-    { class: "trip-card" },
-    h("h4", { text: `${trip.traveller_name}: ${trip.origin.code} → ${trip.destination.code}` }),
-    facts([
-      ["Traveller", trip.traveller_type.replace("_", " ").toLowerCase()],
-      ["From", place(trip.origin)],
-      ["To", place(trip.destination)],
-      ["Booked on", trip.booking_date],
-      ["Departs", dates],
-      ["Business requested", yesNo(trip.wants_business)],
-      ["Checked bag", yesNo(trip.wants_checked_bag)],
-      ["Seed", String(trip.seed)],
-      ["Run", run_id || "none"],
-    ]),
-  );
+function fieldsTable(fields) {
+  return dataTable({
+    columns: [
+      { key: "name", label: "Field", primary: true },
+      { key: "kind", label: "Takes" },
+      { key: "example", label: "Example" },
+      { key: "description", label: "Meaning" },
+    ],
+    rows: fields,
+    caption: "What to tell us",
+    empty: "No fields.",
+  }).element;
+}
+
+function airportsTable(airports) {
+  return dataTable({
+    columns: [
+      { key: "code", label: "Code", primary: true },
+      { key: "city", label: "City" },
+      { key: "country", label: "Country" },
+      { key: "name", label: "Airport" },
+    ],
+    rows: airports,
+    sort: { key: "code" },
+    caption: "Airports",
+    empty: "No airports.",
+  }).element;
+}
+
+function requirements(answer) {
+  const parts = [h("p", { class: "muted", text: `Booking as of today, ${answer.today}` })];
+  if (answer.fields.length) parts.push(fieldsTable(answer.fields));
+  if (answer.date_rules.length) {
+    parts.push(h("h4", { text: "Dates" }), h("ul", { class: "rules" }, answer.date_rules.map((rule) => h("li", { text: rule }))));
+  }
+  parts.push(h("h4", { text: "For example" }), h("blockquote", { class: "example", text: answer.example_request }));
+  if (answer.airports.length) {
+    parts.push(disclosure({ summary: plural(answer.airports.length, "airport"), open: !answer.fields.length }, airportsTable(answer.airports)));
+  }
+  return h("div", { class: "requirements" }, parts);
 }
 
 function route(offer) {
@@ -40,30 +60,36 @@ function route(offer) {
 }
 
 function offersTable(offers) {
-  const table = dataTable({
+  return dataTable({
     columns: [
       { key: "offer_id", label: "Offer", primary: true },
-      { key: "depart", label: "Departs", value: (o) => o.segments[0].depart },
+      { key: "depart", label: "Departs (UTC)", value: (o) => o.segments[0].depart },
+      { key: "arrive", label: "Arrives (UTC)", value: (o) => o.segments.at(-1).arrive },
       { key: "route", label: "Route", value: route },
-      { key: "carrier", label: "Carrier" },
+      { key: "carrier", label: "Airline" },
+      { key: "flights", label: "Flights", value: (o) => o.segments.map((s) => s.flight_number).join(", ") },
       { key: "operator", label: "Operator", value: (o) => o.operator.toLowerCase() },
       { key: "cabin", label: "Cabin", value: (o) => o.cabin.toLowerCase() },
       { key: "fare_cents", label: "Fare", numeric: true, render: (o) => money(o.fare_cents) },
       { key: "total_air_minutes", label: "Air min", numeric: true },
-      { key: "bags", label: "Bag fees", value: (o) => o.segments.map((s) => money(s.bag_fee_cents)).join(" + ") },
+      { key: "bags", label: "Bag fee", value: (o) => money(o.segments.reduce((sum, s) => sum + s.bag_fee_cents, 0)) },
     ],
     rows: offers,
     sort: { key: "depart" },
     caption: "Flight offers",
     empty: "No offers on this route and these days.",
-  });
-  return table.element;
+  }).element;
 }
 
 export default {
-  TripOutput: ({ run_id, trip }) => tripCard(run_id, trip),
-  SearchOutput: ({ offers }) =>
-    h("div", { class: "offers" }, h("p", { class: "muted", text: plural(offers.length, "offer") }), offersTable(offers)),
+  RequirementsOutput: requirements,
+  SearchOutput: ({ note, offers }) =>
+    h(
+      "div",
+      { class: "offers" },
+      h("p", { class: "muted", text: `${plural(offers.length, "offer")}. ${note}` }),
+      offersTable(offers),
+    ),
   BookingOutput: (booking) =>
     booking.booked
       ? h(

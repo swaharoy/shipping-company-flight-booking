@@ -1,35 +1,41 @@
 {
- "note": "Searches wider than the trip's date and books another day.",
+ "note": "A flight the day after the fixed date, seen in a wider search.",
  "kind": "wrong",
  "task": "shipping-company-flight-booking",
- "seed": 10,
- "scenario": "domestic-economy",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "BOS",
+  "destination": "LHR",
+  "date_from": "2026-12-03",
+  "date_to": "2026-12-03",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 10
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 10,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
-    "date_from": "2027-08-18",
-    "date_to": "2027-08-20"
-   },
-   "save_as": "search"
+    "date_from": "$ref:trip.trip.date_from",
+    "date_to": "2026-12-04"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F01",
+    "offer_id": "20261204-01",
     "traveller_out_of_pocket_cents": 0
    }
   }

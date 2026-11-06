@@ -1,35 +1,41 @@
 {
- "note": "The correct booking for a flexible-all-soon trip.",
+ "note": "A flexible window entirely under 7 days ahead: any day in it.",
  "kind": "gold",
  "task": "shipping-company-flight-booking",
- "seed": 206,
- "scenario": "flexible-all-soon",
+ "today": "2026-11-05",
+ "request": {
+  "traveller_name": "Maya Chen",
+  "traveller_type": "EMPLOYEE",
+  "origin": "SEA",
+  "destination": "SFO",
+  "date_from": "2026-11-06",
+  "date_to": "2026-11-09",
+  "wants_business": false,
+  "wants_checked_bag": false
+ },
  "steps": [
   {
    "tool": "get_trip",
-   "arguments": {
-    "seed": 206
-   },
+   "arguments": "$request",
    "save_as": "trip"
   },
   {
    "tool": "search_flights",
+   "save_as": "search",
    "arguments": {
-    "seed": 206,
     "run_id": "$ref:trip.run_id",
     "origin": "$ref:trip.trip.origin.code",
     "destination": "$ref:trip.trip.destination.code",
     "date_from": "$ref:trip.trip.date_from",
     "date_to": "$ref:trip.trip.date_to"
-   },
-   "save_as": "search"
+   }
   },
   {
    "submit": {
     "run_id": "$ref:trip.run_id",
     "booked": true,
     "refusal": "NONE",
-    "offer_id": "F07",
+    "offer_id": "20261106-01",
     "traveller_out_of_pocket_cents": 0
    }
   }
