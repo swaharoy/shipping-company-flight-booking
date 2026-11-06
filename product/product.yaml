@@ -1,5 +1,5 @@
 _ > nanoagent.plugin.v0001.ProductConfig:
-tagline: "Book flights the way a company travel policy says to"
+tagline: "Book flights under Pitney Bowes' public Travel and Expense Policy"
 summary: "Describe a trip in plain words and an agent books a one-way flight for a shipping company's traveller, as of today, under an air-travel policy based on Pitney Bowes' public Travel and Expense Policy: commercial airlines only, coach unless business is allowed, the lowest fare within $100, and the traveller's checked-bag cost. Real airports and airline names; simulated fares and schedules. A deterministic verifier checks every booking against the policy's rules."
 highlights:
   - "No codes to learn: say who travels, from where to where, and when; the plugin can list what it needs"
